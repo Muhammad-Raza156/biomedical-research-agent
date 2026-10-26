@@ -1,0 +1,21 @@
+name: api
+
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: api-service/Dockerfile
+    env_file: [../.env]
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/openapi.json')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [research-net]
+    restart: unless-stopped
+
+networks:
+  research-net:
+    external: true

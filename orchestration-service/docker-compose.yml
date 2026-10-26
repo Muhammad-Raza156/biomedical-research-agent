@@ -1,0 +1,112 @@
+name: orchestration
+
+services:
+  worker:
+    build:
+      context: ..
+      dockerfile: orchestration-service/worker/Dockerfile
+    env_file: [../.env]
+    volumes:
+      - staging-data:/data/staging
+    depends_on:
+      temporal: {condition: service_healthy}
+      neo4j: {condition: service_healthy}
+      neo4j-init: {condition: service_completed_successfully}
+      redis: {condition: service_healthy}
+      postgres: {condition: service_healthy}
+    networks: [research-net]
+    restart: unless-stopped
+    stop_grace_period: 30s
+
+  temporal:
+    image: temporalio/temporal:1.9.1
+    command: ["server", "start-dev", "--ip", "0.0.0.0", "--ui-ip", "0.0.0.0",
+              "--db-filename", "/home/temporal/temporal.db"]
+    ports:
+      - "7233:7233"   # gRPC (API + your local scripts)
+      - "8233:8233"   # Web UI
+    volumes:
+      - temporal-data:/home/temporal
+    healthcheck:
+      test: ["CMD", "temporal", "operator", "cluster", "health", "--address", "127.0.0.1:7233"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+    networks: [research-net]
+    restart: unless-stopped
+
+  neo4j:
+    image: neo4j:5.26.32-enterprise
+    env_file: [../.env]
+    environment:
+      NEO4J_ACCEPT_LICENSE_AGREEMENT: "eval"
+      NEO4J_server_memory_heap_max__size: "1G"
+      NEO4J_server_memory_pagecache_size: "512M"
+    # NEO4J_AUTH must be "neo4j/<password>"; build it from GRAPH_PASSWORD at start-up.
+    entrypoint: ["sh", "-c", "export NEO4J_AUTH=neo4j/$$GRAPH_PASSWORD && exec tini -g -- /startup/docker-entrypoint.sh neo4j"]
+    ports:
+      - "7474:7474"   # Neo4j Browser
+      - "7687:7687"   # Bolt
+    volumes:
+      - neo4j-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "cypher-shell -u neo4j -p \"$$GRAPH_PASSWORD\" 'RETURN 1' >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+      start_period: 30s
+    networks: [research-net]
+    restart: unless-stopped
+
+  neo4j-init:
+    image: neo4j:5.26.32-enterprise
+    env_file: [../.env]
+    entrypoint: ["sh", "/init/init.sh"]
+    volumes:
+      - ./neo4j-init:/init:ro
+    depends_on:
+      neo4j: {condition: service_healthy}
+    networks: [research-net]
+    restart: "no"
+
+  redis:
+    image: redis:7.4.11-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "16379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [research-net]
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16.15-alpine
+    env_file: [../.env]   # POSTGRES_USER / POSTGRES_PASSWORD / POSTGRES_DB
+    ports:
+      - "15432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [research-net]
+    restart: unless-stopped
+
+networks:
+  research-net:
+    external: true
+
+volumes:
+  temporal-data:
+  neo4j-data:
+  redis-data:
+  postgres-data:
+  staging-data:
