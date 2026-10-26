@@ -1,0 +1,6 @@
+# Linux containers need LF line endings; Windows editors default to CRLF.
+*.sh        text eol=lf
+*.lua       text eol=lf
+Dockerfile  text eol=lf
+*.yml       text eol=lf
+*.py        text eol=lf

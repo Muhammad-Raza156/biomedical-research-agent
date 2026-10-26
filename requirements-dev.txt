@@ -1,0 +1,5 @@
+-r orchestration-service/requirements.txt
+-r api-service/requirements.txt
+pytest==9.1.1
+pytest-asyncio==1.4.1
+ruff==0.17.2
