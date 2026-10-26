@@ -27,6 +27,9 @@ def test_numbers_tolerate_whitespace(local_env):
     s = Settings.from_env({**local_env, "FETCH_BATCH_SIZE": " 40 "})
     assert s.fetch_batch_size == 40
 
+def test_postgres_password_is_url_encoded(local_env):
+    s = Settings.from_env({**local_env, "POSTGRES_PASSWORD": "p@ss:w/rd"})
+    assert ":p%40ss%3Aw%2Frd@" in s.postgres_dsn
 
 def test_settings_are_frozen(local_env):
     s = Settings.from_env(local_env)

@@ -6,6 +6,7 @@ import os
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
+from urllib.parse import quote
 
 
 class ConfigError(Exception):
@@ -83,7 +84,7 @@ class Settings:
         def f(name: str, default: float) -> float:
             return float(s(name, str(default)) or default)
 
-        pg = (f"postgresql://{s('POSTGRES_USER', 'langgraph')}:{s('POSTGRES_PASSWORD')}"
+        pg = (f"postgresql://{s('POSTGRES_USER', 'langgraph')}:{quote(s('POSTGRES_PASSWORD'), safe='')}"
               f"@{s('POSTGRES_HOST', 'postgres')}:{s('POSTGRES_PORT', '5432')}"
               f"/{s('POSTGRES_DB', 'langgraph')}")
 
