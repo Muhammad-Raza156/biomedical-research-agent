@@ -11,13 +11,15 @@ LOCAL_ENV = {
     "CORPUS_VERSION": "test",
     "CORPUS_QUERY": "metformin[majr] AND neoplasms[majr]",
     "TEMPORAL_ADDRESS": "localhost:7233",
-    "REDIS_URL": "redis://localhost:16379/15",   # db 15 = test-only Redis database
+    "REDIS_URL": "redis://localhost:16379/15",  # db 15 = test-only Redis database
     "GRAPH_URI": "bolt://localhost:7687",
     "GRAPH_USER": "neo4j",
     "GRAPH_PASSWORD": os.environ.get("GRAPH_PASSWORD", "change-me-neo4j-pw"),
     "GRAPH_DATABASE": "test",
     "GRAPH_READER_USER": "agent_reader",
-    "GRAPH_READER_PASSWORD": os.environ.get("GRAPH_READER_PASSWORD", "change-me-reader-pw"),
+    "GRAPH_READER_PASSWORD": os.environ.get(
+        "GRAPH_READER_PASSWORD", "change-me-reader-pw"
+    ),
     "POSTGRES_USER": "langgraph",
     "POSTGRES_PASSWORD": os.environ.get("POSTGRES_PASSWORD", "change-me-postgres-pw"),
     "POSTGRES_DB": "langgraph",

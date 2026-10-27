@@ -22,8 +22,20 @@ async def redis_client(local_env):
 
 async def test_two_workers_share_one_limit(redis_client):
     # Two limiter objects = two worker replicas sharing one Redis bucket.
-    a = RedisTokenBucket(redis_client, "test:bucket", rate_per_second=3, log_key="test:log", worker_id="A")
-    b = RedisTokenBucket(redis_client, "test:bucket", rate_per_second=3, log_key="test:log", worker_id="B")
+    a = RedisTokenBucket(
+        redis_client,
+        "test:bucket",
+        rate_per_second=3,
+        log_key="test:log",
+        worker_id="A",
+    )
+    b = RedisTokenBucket(
+        redis_client,
+        "test:bucket",
+        rate_per_second=3,
+        log_key="test:log",
+        worker_id="B",
+    )
     granted: list[float] = []
 
     async def take(limiter: RedisTokenBucket) -> None:

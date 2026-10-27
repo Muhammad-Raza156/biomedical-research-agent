@@ -13,7 +13,12 @@ class ConfigError(Exception):
     """Raised at start-up when configuration is missing or invalid."""
 
 
-_REQUIRED = ("GRAPH_PASSWORD", "GRAPH_READER_PASSWORD", "POSTGRES_PASSWORD", "CORPUS_QUERY")
+_REQUIRED = (
+    "GRAPH_PASSWORD",
+    "GRAPH_READER_PASSWORD",
+    "POSTGRES_PASSWORD",
+    "CORPUS_QUERY",
+)
 
 
 @dataclass(frozen=True)
@@ -73,7 +78,9 @@ class Settings:
         e = os.environ if env is None else env
         missing = [name for name in _REQUIRED if not e.get(name, "").strip()]
         if missing:
-            raise ConfigError(f"missing required environment variables: {', '.join(missing)}")
+            raise ConfigError(
+                f"missing required environment variables: {', '.join(missing)}"
+            )
 
         def s(name: str, default: str = "") -> str:
             return e.get(name, default).strip()
@@ -84,9 +91,11 @@ class Settings:
         def f(name: str, default: float) -> float:
             return float(s(name, str(default)) or default)
 
-        pg = (f"postgresql://{s('POSTGRES_USER', 'langgraph')}:{quote(s('POSTGRES_PASSWORD'), safe='')}"
-              f"@{s('POSTGRES_HOST', 'postgres')}:{s('POSTGRES_PORT', '5432')}"
-              f"/{s('POSTGRES_DB', 'langgraph')}")
+        pg = (
+            f"postgresql://{s('POSTGRES_USER', 'langgraph')}:{quote(s('POSTGRES_PASSWORD'), safe='')}"
+            f"@{s('POSTGRES_HOST', 'postgres')}:{s('POSTGRES_PORT', '5432')}"
+            f"/{s('POSTGRES_DB', 'langgraph')}"
+        )
 
         return cls(
             llm_model=s("LLM_MODEL", "google_genai:gemini-2.5-flash"),

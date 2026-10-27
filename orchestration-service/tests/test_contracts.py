@@ -22,11 +22,18 @@ def test_key_builders_follow_brief_names():
 
 
 def test_event_round_trips_through_redis_bytes():
-    event = StreamEvent(step=3, node="generate_cypher", type=EventType.LLM_CALL,
-                        content="asked the LLM for Cypher", meta=meta_json(tokens=120))
+    event = StreamEvent(
+        step=3,
+        node="generate_cypher",
+        type=EventType.LLM_CALL,
+        content="asked the LLM for Cypher",
+        meta=meta_json(tokens=120),
+    )
     fields = event.to_redis()
     assert all(isinstance(k, str) and isinstance(v, str) for k, v in fields.items())
-    as_bytes = {k.encode(): v.encode() for k, v in fields.items()}  # what redis-py returns
+    as_bytes = {
+        k.encode(): v.encode() for k, v in fields.items()
+    }  # what redis-py returns
     back = StreamEvent.from_redis(as_bytes)
     assert back == event
     assert json.loads(back.meta) == {"tokens": 120}

@@ -1,8 +1,8 @@
 -- Token bucket shared by every worker replica.
 -- KEYS[1] = bucket hash key
 -- ARGV[1] = refill rate (token per second), ARGV[2] = capacity (max_tokens)
--- Returns: 0 when a token was taken, otherwise milliseconds to wait befor retrying 
--- Runs atmoically inside Redis, so two workers can never take the same token.
+-- Returns: 0 when a token was taken, otherwise milliseconds to wait before retrying 
+-- Runs atomically inside Redis, so two workers can never take the same token.
 
 local rate = tonumber(ARGV[1])
 local capacity = tonumber(ARGV[2])
