@@ -7,7 +7,7 @@ def test_defaults_and_types(local_env):
     s = Settings.from_env(local_env)
     assert s.corpus_cutoff_year == 2016
     assert s.fetch_batch_size == 50
-    assert s.ncbi_rate == 2.5                # no NCBI_API_KEY → keyless rate
+    assert s.ncbi_rate == 2.5  # no NCBI_API_KEY → keyless rate
     assert s.postgres_dsn.startswith("postgresql://langgraph:")
     assert s.postgres_dsn.endswith("@localhost:15432/langgraph")
 
@@ -27,9 +27,11 @@ def test_numbers_tolerate_whitespace(local_env):
     s = Settings.from_env({**local_env, "FETCH_BATCH_SIZE": " 40 "})
     assert s.fetch_batch_size == 40
 
+
 def test_postgres_password_is_url_encoded(local_env):
     s = Settings.from_env({**local_env, "POSTGRES_PASSWORD": "p@ss:w/rd"})
     assert ":p%40ss%3Aw%2Frd@" in s.postgres_dsn
+
 
 def test_settings_are_frozen(local_env):
     s = Settings.from_env(local_env)
