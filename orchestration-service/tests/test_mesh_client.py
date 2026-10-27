@@ -1,7 +1,7 @@
 import httpx
 import pytest
 
-from clients.mesh import MeshClient, MeshRetryableError
+from clients.mesh import MeshClient, MeshPermanentError, MeshRetryableError
 
 
 class NoLimit:
@@ -39,4 +39,9 @@ async def test_descriptors_at_maps_tree_number_to_descriptor():
 async def test_server_error_is_retryable():
     client = MeshClient(httpx.AsyncClient(transport=httpx.MockTransport(lambda r: httpx.Response(503))), NoLimit())
     with pytest.raises(MeshRetryableError):
+        await client.tree_numbers(["D1"])
+
+async def test_bad_query_is_permanent():
+    client = MeshClient(httpx.AsyncClient(transport=httpx.MockTransport(lambda r: httpx.Response(400))), NoLimit())
+    with pytest.raises(MeshPermanentError, match="400"):
         await client.tree_numbers(["D1"])

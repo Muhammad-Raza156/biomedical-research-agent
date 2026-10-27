@@ -19,6 +19,9 @@ PREFIX mesh: <http://id.nlm.nih.gov/mesh/>
 class MeshRetryableError(Exception):
     """Transient SPARQL failure; Temporal retries the activity."""
 
+class MeshPermanentError(Exception):
+    """SPARQL failure that retrying cannot fix (e.g. 400 for a malformed query)."""
+
 
 class MeshLookup(Protocol):
     """What enrichment needs; MeshClient in production, a fake in tests."""
@@ -74,6 +77,8 @@ class MeshClient:
                 "query": _PREFIXES + query, "format": "JSON", "limit": "10000"})
         except httpx.TransportError as exc:
             raise MeshRetryableError(f"mesh network error: {exc!r}") from exc
-        if response.status_code >= 400:
+        if response.status_code == 429 or response.status_code >= 500:
             raise MeshRetryableError(f"mesh HTTP {response.status_code}")
+        if response.status_code >= 400:
+            raise MeshPermanentError(f"mesh HTTP {response.status_code}: {response.text[:200]}")
         return response.json()["results"]["bindings"]
