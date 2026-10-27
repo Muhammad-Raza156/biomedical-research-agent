@@ -1,4 +1,4 @@
-"""staging volumn layout and crash-safe file writes."""
+"""staging volume layout and crash-safe file writes."""
 
 from __future__ import annotations
 
@@ -7,7 +7,8 @@ import os
 from pathlib import Path
 from typing import Any
 
-def atomic_write_bytes(path:Path, data: bytes) -> None:
+
+def atomic_write_bytes(path: Path, data: bytes) -> None:
     """write bytes so that readers see either the old file or the complete new one."""
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_name(path.name + ".tmp")
@@ -22,9 +23,11 @@ def atomic_write_text(path: Path, text: str) -> None:
     """UTF-8 text version of atomic_write_bytes."""
     atomic_write_bytes(path, text.encode("utf-8"))
 
+
 def read_json(path: Path) -> Any:
     """Read a JSON file written by atomic_write_text."""
     return json.loads(path.read_text(encoding="utf-8"))
+
 
 class StagingArea:
     """where every stage keeps its raw and intermediate files for one corpus version."""
@@ -40,7 +43,7 @@ class StagingArea:
         self.hierarchy_file = self.version_dir / "mesh_hierarchy.json"
         self.mesh_cache_file = root / "mesh_cache.json"
 
-    def xml_batch(self, index:int) -> Path:
+    def xml_batch(self, index: int) -> Path:
         """Raw efetch XML for batch `index`."""
         return self.version_dir / "xml" / f"batch_{index:04d}.xml"
 
