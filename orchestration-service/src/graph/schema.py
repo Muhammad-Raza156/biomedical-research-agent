@@ -14,6 +14,7 @@ SCHEMA_STATEMENTS = [
     "CREATE INDEX mesh_name IF NOT EXISTS FOR (m:MeshTerm) ON (m.name)",
 ]
 
+
 async def ensure_schema(driver: AsyncDriver, database: str) -> None:
     """Create all constraints/indexes; safe to call on every ingestion run."""
     async with driver.session(database=database) as session:
