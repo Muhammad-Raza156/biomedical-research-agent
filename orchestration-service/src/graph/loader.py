@@ -13,7 +13,7 @@ _OWNED_OUT = "|".join(["PUBLISHED_IN", "MENTIONS", *NOTICE_RELATIONSHIPS.values(
 
 
 async def _write(driver: AsyncDriver, database: str, work, *args) -> object:
-    async with driver.sessions(database=database) as session:
+    async with driver.session(database=database) as session:
         return await session.execute_write(work, *args)
 
 
@@ -26,7 +26,7 @@ async def _mesh_tx(
         UNWIND $terms AS t
         MERGE (m:MeshTerm {ui: t.ui})
         SET m.name = t.name, m.tree_numbers = t.tree_numbers, m.category = t.category,
-            m.categories = t.categories, m.in_corpus = t.in_corpus, m.is_root
+            m.categories = t.categories, m.in_corpus = t.in_corpus, m.is_root = t.is_root
         """,
         terms=terms,
     )
@@ -34,7 +34,7 @@ async def _mesh_tx(
         """
         UNWIND $edges AS e
         MATCH (child:MeshTerm {ui: e.child}), (parent:MeshTerm {ui: e.parent})
-        MERGE (child)-[:BROADER] ->(parent)
+        MERGE (child)-[:BROADER]->(parent)
         """,
         edges=edges,
     )
@@ -54,7 +54,7 @@ async def _authors_tx(tx: AsyncManagedTransaction, authors: list[dict]) -> None:
     await tx.run(
         """
         UNWIND $authors AS a
-        MERGE (au: Author {author_id: a.authord_id})
+        MERGE (au: Author {author_id: a.author_id})
         SET au.display_name = a.display_name, au.orcid = a.orcid, au.name_key=a.name_key,
         au.collective = a.collective, au.name_variants = a.name_variants,
         au.merge_evidence = a.merge_evidence
@@ -85,7 +85,7 @@ async def _paper_batch_tx(tx: AsyncManagedTransaction, rows: dict) -> int:
     )
     written = (await result.single())["written"]
 
-    # Remove edges this batch owns, then re-create them: re-run stay correct even if imputs chnaged.
+    # Remove edges this batch owns, then re-create them: re-run stay correct even if inputs changed.
     await tx.run(
         f"""
         UNWIND $pmids AS pmid
@@ -106,7 +106,8 @@ async def _paper_batch_tx(tx: AsyncManagedTransaction, rows: dict) -> int:
     await tx.run(
         """
         UNWIND $journals AS j
-        MATCH (jn:Journal {issn: j.issn})
+        MATCH (p:Paper {pmid: j.pmid})
+        MERGE (jn:Journal {issn: j.issn})
         SET jn.issn_type = j.issn_type, jn.title = j.title, jn.issn_print = j.issn_print,
             jn.issn_electronic = j.issn_electronic, jn.issn_linking = j.issn_linking
         MERGE (p)-[:PUBLISHED_IN]->(jn)
@@ -115,7 +116,7 @@ async def _paper_batch_tx(tx: AsyncManagedTransaction, rows: dict) -> int:
     )
     await tx.run(
         """
-        UNWIND $authorship AS a
+        UNWIND $authorships AS a
         MATCH (p:Paper {pmid: a.pmid}), (au:Author {author_id: a.author_id})
         MERGE (au)-[r:AUTHORED {position: a.position}]->(p)
         SET r.name_as_written = a.name_as_written, r.affiliations = a.affiliations,
@@ -158,11 +159,13 @@ async def load_paper_batch(driver: AsyncDriver, database: str, rows: BatchRows) 
 
 # Citations and clean-up
 async def _citations_tx(tx: AsyncManagedTransaction, edges: list[dict]) -> None:
+    await tx.run("MATCH (:Paper)-[r:CITES]->(:Paper) DELETE r")
     await tx.run(
         """
        UNWIND $edges AS e
        MATCH (a:Paper {pmid: e.src}), (b:Paper {pmid: e.dst})
        MERGE (a)-[r:CITES]->(b)
+       SET r.source = e.source
        """,
         edges=edges,
     )
@@ -171,7 +174,7 @@ async def _citations_tx(tx: AsyncManagedTransaction, edges: list[dict]) -> None:
 async def load_citations(
     driver: AsyncDriver, database: str, edges: list[CitationEdge]
 ) -> None:
-    """Write all intra-corpus CITES edges (after all papers exits) in one transaction."""
+    """Write all intra-corpus CITES edges (after all papers exist) in one transaction."""
     await _write(driver, database, _citations_tx, [e.model_dump() for e in edges])
 
 
