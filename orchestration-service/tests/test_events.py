@@ -26,7 +26,7 @@ async def test_ingest_events_get_monotonic_steps(redis_client):
     assert await pub.last_step(ingest_stream_key("run1")) == 2
 
 
-async def test_terminal_event_ets_ttl(redis_client):
+async def test_terminal_event_sets_ttl(redis_client):
     pub = EventPublisher(redis_client, maxlen=100, ttl_seconds=60)
     await pub.publish("s", StreamEvent(step=1, type="node_enter", content="x"))
     assert await redis_client.ttl("s") == -1
