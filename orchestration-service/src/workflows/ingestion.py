@@ -100,6 +100,14 @@ class IngestionWorkflow:
                             continue_as_new_events=inp.continue_as_new_events,
                         )
                     )
+            # finalize runs after the loop so its `completed` event is the stream's last entry
+            self._stage = "finalize"
+            self._result = await workflow.execute_activity_method(
+                IngestionActivities.finalize,
+                inp.corpus_version,
+                start_to_close_timeout=timedelta(minutes=5),
+                retry_policy=DB_RETRY,
+            )
         except ActivityError as err:
             reason = str(err.cause) if err.cause else str(err)
             await self._event(
@@ -191,12 +199,6 @@ class IngestionWorkflow:
             )
             written += r.items
         self._counts["papers_written"] = written
-        self._result = await workflow.execute_activity_method(
-            IngestionActivities.finalize,
-            version,
-            start_to_close_timeout=timedelta(minutes=5),
-            retry_policy=DB_RETRY,
-        )
         return f"{written} papers written, {prepared.skipped} skipped"
 
     async def _event(self, run_id: str, type: str, content: str) -> None:

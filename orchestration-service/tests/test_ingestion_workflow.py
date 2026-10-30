@@ -110,6 +110,7 @@ async def test_stages_run_in_order_and_result_is_finalize_output():
     ]
     assert result == {"papers": 5}
     assert log.count("event:stage_started") == 5
+    assert log[-1] == "finalize"  # nothing is published after the terminal `completed`
 
 
 async def test_failure_publishes_error_event_and_fails_cleanly():
