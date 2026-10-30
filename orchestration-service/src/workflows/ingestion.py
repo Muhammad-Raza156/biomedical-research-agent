@@ -164,8 +164,8 @@ class IngestionWorkflow:
         r: StageResult = await workflow.execute_activity_method(
             IngestionActivities.enrich,
             version,
-            start_to_close_timeout=timedelta(minutes=10),
-            heartbeat_timeout=timedelta(seconds=60),
+            start_to_close_timeout=timedelta(minutes=30),
+            heartbeat_timeout=timedelta(minutes=2),
             retry_policy=NCBI_RETRY,
         )
         self._counts["mesh_descriptors"] = r.items
