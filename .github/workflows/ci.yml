@@ -1,0 +1,42 @@
+name: ci
+on: [push, pull_request]
+
+jobs:
+  unit:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.13"}
+      - run: pip install -r requirements-dev.txt
+      - run: make test-unit
+
+  integration:
+    runs-on: ubuntu-24.04
+    services:
+      redis:
+        image: redis:7.4.11-alpine
+        ports: ["16379:6379"]
+      neo4j:
+        image: neo4j:5.26.32-enterprise
+        env:
+          NEO4J_AUTH: neo4j/ci-password-123
+          NEO4J_ACCEPT_LICENSE_AGREEMENT: eval
+        ports: ["7687:7687", "7474:7474"]
+        options: >-
+          --health-cmd "cypher-shell -u neo4j -p ci-password-123 'RETURN 1'"
+          --health-interval 10s --health-retries 30
+    env:
+      GRAPH_PASSWORD: ci-password-123
+      GRAPH_READER_PASSWORD: ci-reader-123
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.13"}
+      - run: pip install -r requirements-dev.txt
+      - name: create test database and read-only user
+        run: |
+          docker exec ${{ job.services.neo4j.id }} cypher-shell -u neo4j -p ci-password-123 -d system \
+            "CREATE DATABASE test IF NOT EXISTS WAIT; CREATE USER agent_reader IF NOT EXISTS SET PASSWORD 'ci-reader-123' CHANGE NOT REQUIRED; GRANT ROLE reader TO agent_reader;"
+      - run: cd orchestration-service && python -m pytest -m integration -q --deselect tests/test_idempotency_e2e.py
+      - run: cd api-service && python -m pytest -m integration -q
