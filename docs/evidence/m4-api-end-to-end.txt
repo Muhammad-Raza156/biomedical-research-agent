@@ -1,0 +1,223 @@
+# Plan 10 Task 6 — milestone M4: the HTTP API end to end (brief §7)
+# Run on 2026-10-31 (UTC), model groq:openai/gpt-oss-120b, API at http://localhost:8000
+
+## 1. POST /queries → stream → clarify → answer (query_id 6907bab62f794b15)
+curl -X POST /queries -d {"question":"What did Goodwin P publish about metformin?"}  -> 202 {"query_id":"6907bab62f794b15"}
+curl -N /queries/6907bab62f794b15/stream   # opened right away, kept open for the whole run
+GET /queries/6907bab62f794b15  -> status awaiting_input, clarification "Goodwin P": Goodwin P J | Goodwin Pamela
+# waited 20 s before answering (longer than one 15 s XREAD block): the subscriber got a keep-alive and stayed open
+POST /queries/6907bab62f794b15/clarify {"choice":"Goodwin P J"}  -> 200 {"status":"accepted"}
+subscriber: 51 events, 1 keep-alive, closed by the server after event: answer (64 s)
+
+### SSE as received (first 3 and last 3 events)
+retry: 3000
+
+id: 1793462758384-0
+event: node_enter
+data: {"ts":"2026-10-31T16:05:58.383603+00:00","step":1,"node":"plan","type":"node_enter","content":"planning sub-questions and resolving entities","meta":""}
+
+id: 1793462760447-0
+event: llm_call
+data: {"ts":"2026-10-31T16:06:00.446839+00:00","step":2,"node":"plan","type":"llm_call","content":"plan","meta":"{\"model\": \"groq:openai/gpt-oss-120b\", \"input_tokens\": 859, \"output_tokens\": 760}"}
+
+id: 1793462760448-0
+event: reasoning
+data: {"ts":"2026-10-31T16:06:00.448137+00:00","step":3,"node":"plan","type":"reasoning","content":"sub-questions: Retrieve all papers authored by Goodwin P that mention the MeSH term Metformin, returning their PMID, title, and publication year. | Return the list of these papers' titles (and optionally abstracts) as the answer.","meta":""}
+
+[...]
+id: 1793462822381-0
+event: reasoning
+data: {"ts":"2026-10-31T16:07:02.381022+00:00","step":49,"node":"verify","type":"reasoning","content":"verification complete: 1 checked, 1 passed, 0 dropped","meta":""}
+
+id: 1793462822381-1
+event: node_exit
+data: {"ts":"2026-10-31T16:07:02.381414+00:00","step":50,"node":"verify","type":"node_exit","content":"answer ready","meta":""}
+
+id: 1793462822393-0
+event: answer
+data: {"ts":"2026-10-31T16:07:02.393289+00:00","step":51,"node":"answer","type":"answer","content":"- Goodwin P authored a 2021 paper titled \"Diabetes, metformin and breast cancer: a tangled web.\" that discusses metformin. (PMID 33516777)","meta":"{\"total_tokens\": 9122, \"estimated_cost_usd\": 0.0, \"claims_checked\": 1, \"claims_passed\": 1, \"claims_dropped\": 0}"}
+
+### GET /queries/6907bab62f794b15
+{
+    "query_id": "6907bab62f794b15",
+    "status": "completed",
+    "clarification": null,
+    "answer": {
+        "answer": "- Goodwin P authored a 2021 paper titled \"Diabetes, metformin and breast cancer: a tangled web.\" that discusses metformin. (PMID 33516777)",
+        "claims": [
+            {
+                "text": "Goodwin P authored a 2021 paper titled \"Diabetes, metformin and breast cancer: a tangled web.\" that discusses metformin.",
+                "pmids": [
+                    "33516777"
+                ],
+                "cypher": "MATCH (a:Author {author_id: 'name:goodwin|p:33516777/2'})-[:AUTHORED]->(p:Paper)-[:MENTIONS]->(:MeshTerm)-[:BROADER*0..]->(m:MeshTerm {ui: 'D008687'})\nWHERE p.in_corpus\nRETURN DISTINCT p.pmid AS pmid, p.title AS title, p.pub_year AS year\nORDER BY year LIMIT 200",
+                "verification_queries": [
+                    "MATCH (a:Author)-[:AUTHORED]->(p:Paper {pmid: $pmid}) WHERE a.author_id = $author OR toLower(a.display_name) = toLower($author) RETURN count(*) > 0 AS ok",
+                    "MATCH (p:Paper {pmid: $pmid})-[:MENTIONS]->(:MeshTerm)-[:BROADER*0..]->(m:MeshTerm) WHERE m.ui = $mesh OR toLower(m.name) = toLower($mesh) RETURN count(*) > 0 AS ok",
+                    "MATCH (p:Paper {pmid: $pmid}) RETURN p.pub_year = $year AS ok"
+                ],
+                "warnings": []
+            }
+        ],
+        "claims_checked": 1,
+        "claims_passed": 1,
+        "claims_dropped": 0,
+        "notes": [],
+        "input_tokens": 5982,
+        "output_tokens": 3140,
+        "total_tokens": 9122,
+        "estimated_cost_usd": 0.0
+    },
+    "error": null
+}
+
+## 2. Reconnect with Last-Event-ID (Step 3)
+Last-Event-ID = 40th id -> 11 later events only (51 total); first: id: 1793462814469-0
+Last-Event-ID = id of the answer event -> 0 events, connection closed in ~1 s
+Last-Event-ID: abc -> 422; GET /queries/nope/stream -> 404
+Earlier run with an invalid choice: POST /clarify {"choice":"nobody"} -> 409 {"detail":"ValueError: 'nobody' is not one of the offered options"}; unknown id -> 404
+
+## 3. API starts while Temporal is down (Step 4)
+docker compose -p orchestration -f orchestration-service/docker-compose.yml stop temporal; docker restart api-api-1
+GET /health -> HTTP/1.1 503 {"status":"degraded","dependencies":{"temporal":"down","redis":"up","neo4j":"up"}}
+POST /queries -> 503 {"detail":"temporal is not reachable yet"}
+docker compose -p orchestration -f orchestration-service/docker-compose.yml start temporal
+GET /health -> 200 {"status":"ok","dependencies":{"temporal":"up","redis":"up","neo4j":"up"}}   (API RestartCount=0, no crash loop)
+
+## 4. POST /ingest twice (Step 5)
+{"run_id":"ingest-v1"} -> 202
+{"run_id":"ingest-v1"} -> 202
+GET /ingest/ingest-v1:
+{
+    "run_id": "ingest-v1",
+    "status": "completed",
+    "stage": null,
+    "progress": {},
+    "result": {
+        "run_id": "ingest-v1",
+        "corpus_version": "v1",
+        "papers": 275,
+        "authors": 1649,
+        "mesh_terms": 1099,
+        "journals": 146,
+        "citations": {
+            "xml_internal": 678,
+            "elink_internal": 674,
+            "both": 674,
+            "xml_only": 4,
+            "elink_only": 0,
+            "dangling_xml": 5154,
+            "dangling_elink": 5080
+        },
+        "orphan_authors_removed": 0,
+        "skipped_records": [],
+        "added": 275,
+        "removed": 0,
+        "unchanged": 0,
+        "corpus_stats": {
+            "papers": 275,
+            "min_year": 2006,
+            "max_year": 2026,
+            "date_span_years": 20,
+            "cutoff_year": 2016,
+            "before_cutoff": 77,
+            "after_cutoff": 198,
+            "retracted_papers": 1,
+            "cites_total": 678,
+            "cites_by_source": {
+                "both": 674,
+                "xml": 4
+            },
+            "longest_chain": 13,
+            "authors_multi_paper": 135,
+            "mesh_top_level_trees": [
+                "A",
+                "B",
+                "C",
+                "D",
+                "E",
+                "F",
+                "G",
+                "H",
+                "I",
+                "J",
+                "L",
+                "M",
+                "N",
+                "Z"
+            ],
+            "papers_with_notices": 27,
+            "node_counts": {
+                "MeshTerm": 1099,
+                "Author": 1649,
+                "Paper": 275,
+                "Journal": 146,
+                "Notice": 36
+            },
+            "relationship_counts": {
+                "BROADER": 1418,
+                "AUTHORED": 1877,
+                "PUBLISHED_IN": 275,
+                "MENTIONS": 3664,
+                "COMMENTED_IN": 30,
+                "CITES": 678,
+                "COMMENTS_ON": 2,
+                "CORRECTED_BY": 3,
+                "RETRACTED_BY": 1
+            }
+        }
+    }
+}
+GET /corpus/stats:
+{
+    "papers": 275,
+    "min_year": 2006,
+    "max_year": 2026,
+    "date_span_years": 20,
+    "cutoff_year": 2016,
+    "before_cutoff": 77,
+    "after_cutoff": 198,
+    "retracted_papers": 1,
+    "cites_total": 678,
+    "cites_by_source": {
+        "both": 674,
+        "xml": 4
+    },
+    "longest_chain": 13,
+    "authors_multi_paper": 135,
+    "mesh_top_level_trees": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "L",
+        "M",
+        "N",
+        "Z"
+    ],
+    "papers_with_notices": 27,
+    "node_counts": {
+        "MeshTerm": 1099,
+        "Author": 1649,
+        "Paper": 275,
+        "Journal": 146,
+        "Notice": 36
+    },
+    "relationship_counts": {
+        "BROADER": 1418,
+        "AUTHORED": 1877,
+        "PUBLISHED_IN": 275,
+        "MENTIONS": 3664,
+        "COMMENTED_IN": 30,
+        "CITES": 678,
+        "COMMENTS_ON": 2,
+        "CORRECTED_BY": 3,
+        "RETRACTED_BY": 1
+    }
+}
