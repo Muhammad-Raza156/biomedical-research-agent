@@ -37,9 +37,11 @@ def make_generate_cypher(deps: AgentDeps):
         out, usage = await deps.llm.structured(CYPHER_SYSTEM, user, CypherOutput)
         await ev.emit(EventType.LLM_CALL, "generate_cypher", model=deps.llm.model_name,
                       input_tokens=usage.input_tokens, output_tokens=usage.output_tokens)
-        await ev.emit(EventType.REASONING, out.reasoning, cypher=out.cypher)
+        # Some models write a literal backslash-n instead of a line break; Cypher rejects it as a syntax error.
+        cypher = out.cypher.replace("\\n", "\n")
+        await ev.emit(EventType.REASONING, out.reasoning, cypher=cypher)
         await ev.emit(EventType.NODE_EXIT, "cypher drafted")
-        return {"current_cypher": out.cypher, "tokens": add_usage(state.get("tokens"), usage),
+        return {"current_cypher": cypher, "tokens": add_usage(state.get("tokens"), usage),
                 "iterations": state.get("iterations", 0) + 1, "step": ev.step}
 
     return generate_cypher

@@ -155,3 +155,15 @@ async def test_injected_text_in_rows_is_wrapped_as_untrusted():
     synth_prompt = llm.prompts[-1]
     assert synth_prompt.count("</untrusted_data>") == 1          # the injected closing tag was neutralised
     assert "Ignore prior instructions" in synth_prompt.split("<untrusted_data>")[1]
+
+
+async def test_literal_backslash_n_in_generated_cypher_becomes_a_line_break():
+    escaped = CypherOutput(cypher=CYPHER.cypher.replace(") RETURN", r")\nRETURN"), reasoning="escaped newline")
+    assert r"\n" in escaped.cypher                               # two characters: backslash, n
+    llm = FakeLLM({PlanOutput: [plan()], CypherOutput: [escaped],
+                   ObserveOutput: [ObserveOutput(summary="ok", decision="next")],
+                   SynthOutput: [SynthOutput(claims=[GOOD_CLAIM])]})
+    graph = FakeGraph(papers=PAPERS, rows=[ROWS], facts=FACTS)
+    deps, _ = make_deps(llm, graph)
+    await run(build_graph(deps, InMemorySaver()), initial_state("q1", "Who wrote PMID 33516777?"))
+    assert r"\n" not in graph.reads[0] and ")\nRETURN" in graph.reads[0]   # a real line break reached Neo4j
