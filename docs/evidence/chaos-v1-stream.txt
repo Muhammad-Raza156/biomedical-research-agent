@@ -1,0 +1,1508 @@
+1793423159929-0
+ts
+2026-10-31T05:05:59.927357+00:00
+step
+1
+node
+ingestion
+type
+stage_started
+content
+stage discover started
+meta
+
+1793423161591-0
+ts
+2026-10-31T05:06:01.590612+00:00
+step
+2
+node
+ingestion
+type
+stage_completed
+content
+stage discover: 275 PMIDs pinned (esearch)
+meta
+
+1793423161695-0
+ts
+2026-10-31T05:06:01.695355+00:00
+step
+3
+node
+ingestion
+type
+stage_started
+content
+stage fetch started
+meta
+
+1793423162833-0
+ts
+2026-10-31T05:06:02.833064+00:00
+step
+4
+node
+ingestion
+type
+batch_fetched
+content
+batch 0 fetched (10 PMIDs)
+meta
+{"batch": 0, "cached": false}
+1793424424171-0
+ts
+2026-10-31T05:27:04.170060+00:00
+step
+5
+node
+ingestion
+type
+batch_fetched
+content
+batch 16 fetched (10 PMIDs)
+meta
+{"batch": 16, "cached": false}
+1793424424747-0
+ts
+2026-10-31T05:27:04.747398+00:00
+step
+6
+node
+ingestion
+type
+batch_fetched
+content
+batch 9 fetched (10 PMIDs)
+meta
+{"batch": 9, "cached": false}
+1793424424788-0
+ts
+2026-10-31T05:27:04.787198+00:00
+step
+7
+node
+ingestion
+type
+batch_fetched
+content
+batch 7 fetched (10 PMIDs)
+meta
+{"batch": 7, "cached": false}
+1793424425261-0
+ts
+2026-10-31T05:27:05.261165+00:00
+step
+8
+node
+ingestion
+type
+batch_fetched
+content
+batch 13 fetched (10 PMIDs)
+meta
+{"batch": 13, "cached": false}
+1793424426246-0
+ts
+2026-10-31T05:27:06.246541+00:00
+step
+9
+node
+ingestion
+type
+batch_fetched
+content
+batch 21 fetched (10 PMIDs)
+meta
+{"batch": 21, "cached": false}
+1793424426459-0
+ts
+2026-10-31T05:27:06.458989+00:00
+step
+10
+node
+ingestion
+type
+retry
+content
+fetch_batch retry, attempt 2
+meta
+{"activity": "fetch_batch", "attempt": 2}
+1793424426705-0
+ts
+2026-10-31T05:27:06.705269+00:00
+step
+11
+node
+ingestion
+type
+batch_fetched
+content
+batch 10 fetched (10 PMIDs)
+meta
+{"batch": 10, "cached": false}
+1793424426795-0
+ts
+2026-10-31T05:27:06.791149+00:00
+step
+12
+node
+ingestion
+type
+retry
+content
+fetch_batch retry, attempt 2
+meta
+{"activity": "fetch_batch", "attempt": 2}
+1793424426839-0
+ts
+2026-10-31T05:27:06.839097+00:00
+step
+13
+node
+ingestion
+type
+batch_fetched
+content
+batch 4 fetched (10 PMIDs)
+meta
+{"batch": 4, "cached": false}
+1793424427498-0
+ts
+2026-10-31T05:27:07.497929+00:00
+step
+14
+node
+ingestion
+type
+batch_fetched
+content
+batch 12 fetched (10 PMIDs)
+meta
+{"batch": 12, "cached": false}
+1793424427589-0
+ts
+2026-10-31T05:27:07.588577+00:00
+step
+15
+node
+ingestion
+type
+retry
+content
+fetch_batch retry, attempt 2
+meta
+{"activity": "fetch_batch", "attempt": 2}
+1793424427865-0
+ts
+2026-10-31T05:27:07.865276+00:00
+step
+16
+node
+ingestion
+type
+batch_fetched
+content
+batch 23 fetched (10 PMIDs)
+meta
+{"batch": 23, "cached": false}
+1793424428298-0
+ts
+2026-10-31T05:27:08.297885+00:00
+step
+17
+node
+ingestion
+type
+batch_fetched
+content
+batch 26 fetched (10 PMIDs)
+meta
+{"batch": 26, "cached": false}
+1793424428494-0
+ts
+2026-10-31T05:27:08.492332+00:00
+step
+18
+node
+ingestion
+type
+retry
+content
+fetch_batch retry, attempt 2
+meta
+{"activity": "fetch_batch", "attempt": 2}
+1793424428528-0
+ts
+2026-10-31T05:27:08.527459+00:00
+step
+19
+node
+ingestion
+type
+batch_fetched
+content
+batch 2 fetched (10 PMIDs)
+meta
+{"batch": 2, "cached": false}
+1793424429173-0
+ts
+2026-10-31T05:27:09.172506+00:00
+step
+20
+node
+ingestion
+type
+batch_fetched
+content
+batch 1 fetched (10 PMIDs)
+meta
+{"batch": 1, "cached": false}
+1793424429265-0
+ts
+2026-10-31T05:27:09.264618+00:00
+step
+21
+node
+ingestion
+type
+retry
+content
+fetch_batch retry, attempt 2
+meta
+{"activity": "fetch_batch", "attempt": 2}
+1793424429554-0
+ts
+2026-10-31T05:27:09.554054+00:00
+step
+22
+node
+ingestion
+type
+batch_fetched
+content
+batch 20 fetched (10 PMIDs)
+meta
+{"batch": 20, "cached": false}
+1793424429665-0
+ts
+2026-10-31T05:27:09.664371+00:00
+step
+23
+node
+ingestion
+type
+retry
+content
+fetch_batch retry, attempt 2
+meta
+{"activity": "fetch_batch", "attempt": 2}
+1793424431067-0
+ts
+2026-10-31T05:27:11.066571+00:00
+step
+24
+node
+ingestion
+type
+batch_fetched
+content
+batch 15 fetched (10 PMIDs)
+meta
+{"batch": 15, "cached": false}
+1793424431177-0
+ts
+2026-10-31T05:27:11.176988+00:00
+step
+25
+node
+ingestion
+type
+retry
+content
+fetch_batch retry, attempt 2
+meta
+{"activity": "fetch_batch", "attempt": 2}
+1793424431299-0
+ts
+2026-10-31T05:27:11.299018+00:00
+step
+26
+node
+ingestion
+type
+batch_fetched
+content
+batch 5 fetched (10 PMIDs)
+meta
+{"batch": 5, "cached": false}
+1793424431344-0
+ts
+2026-10-31T05:27:11.344207+00:00
+step
+27
+node
+ingestion
+type
+batch_fetched
+content
+batch 11 fetched (10 PMIDs)
+meta
+{"batch": 11, "cached": false}
+1793424431398-0
+ts
+2026-10-31T05:27:11.398156+00:00
+step
+28
+node
+ingestion
+type
+retry
+content
+fetch_batch retry, attempt 2
+meta
+{"activity": "fetch_batch", "attempt": 2}
+1793424431482-0
+ts
+2026-10-31T05:27:11.482147+00:00
+step
+29
+node
+ingestion
+type
+retry
+content
+fetch_batch retry, attempt 2
+meta
+{"activity": "fetch_batch", "attempt": 2}
+1793424431931-0
+ts
+2026-10-31T05:27:11.930360+00:00
+step
+30
+node
+ingestion
+type
+batch_fetched
+content
+batch 19 fetched (10 PMIDs)
+meta
+{"batch": 19, "cached": false}
+1793424432090-0
+ts
+2026-10-31T05:27:12.089500+00:00
+step
+31
+node
+ingestion
+type
+retry
+content
+fetch_batch retry, attempt 2
+meta
+{"activity": "fetch_batch", "attempt": 2}
+1793424432420-0
+ts
+2026-10-31T05:27:12.419739+00:00
+step
+32
+node
+ingestion
+type
+batch_fetched
+content
+batch 22 fetched (10 PMIDs)
+meta
+{"batch": 22, "cached": false}
+1793424432517-0
+ts
+2026-10-31T05:27:12.517245+00:00
+step
+33
+node
+ingestion
+type
+retry
+content
+fetch_batch retry, attempt 2
+meta
+{"activity": "fetch_batch", "attempt": 2}
+1793424432561-0
+ts
+2026-10-31T05:27:12.561414+00:00
+step
+34
+node
+ingestion
+type
+batch_fetched
+content
+batch 24 fetched (10 PMIDs)
+meta
+{"batch": 24, "cached": false}
+1793424433293-0
+ts
+2026-10-31T05:27:13.292583+00:00
+step
+35
+node
+ingestion
+type
+batch_fetched
+content
+batch 17 fetched (10 PMIDs)
+meta
+{"batch": 17, "cached": false}
+1793424433815-0
+ts
+2026-10-31T05:27:13.814850+00:00
+step
+36
+node
+ingestion
+type
+batch_fetched
+content
+batch 3 fetched (10 PMIDs)
+meta
+{"batch": 3, "cached": false}
+1793424434081-0
+ts
+2026-10-31T05:27:14.080526+00:00
+step
+37
+node
+ingestion
+type
+batch_fetched
+content
+batch 14 fetched (10 PMIDs)
+meta
+{"batch": 14, "cached": false}
+1793424434479-0
+ts
+2026-10-31T05:27:14.479066+00:00
+step
+38
+node
+ingestion
+type
+batch_fetched
+content
+batch 27 fetched (5 PMIDs)
+meta
+{"batch": 27, "cached": false}
+1793424434865-0
+ts
+2026-10-31T05:27:14.865098+00:00
+step
+39
+node
+ingestion
+type
+retry
+content
+fetch_batch retry, attempt 3
+meta
+{"activity": "fetch_batch", "attempt": 3}
+1793424435848-0
+ts
+2026-10-31T05:27:15.847520+00:00
+step
+40
+node
+ingestion
+type
+batch_fetched
+content
+batch 25 fetched (10 PMIDs)
+meta
+{"batch": 25, "cached": false}
+1793424436506-0
+ts
+2026-10-31T05:27:16.506265+00:00
+step
+41
+node
+ingestion
+type
+retry
+content
+fetch_batch retry, attempt 2
+meta
+{"activity": "fetch_batch", "attempt": 2}
+1793424436548-0
+ts
+2026-10-31T05:27:16.547742+00:00
+step
+42
+node
+ingestion
+type
+retry
+content
+fetch_batch retry, attempt 3
+meta
+{"activity": "fetch_batch", "attempt": 3}
+1793424436952-0
+ts
+2026-10-31T05:27:16.952494+00:00
+step
+43
+node
+ingestion
+type
+retry
+content
+fetch_batch retry, attempt 2
+meta
+{"activity": "fetch_batch", "attempt": 2}
+1793424437169-0
+ts
+2026-10-31T05:27:17.169331+00:00
+step
+44
+node
+ingestion
+type
+batch_fetched
+content
+batch 8 fetched (10 PMIDs)
+meta
+{"batch": 8, "cached": false}
+1793424438152-0
+ts
+2026-10-31T05:27:18.151953+00:00
+step
+45
+node
+ingestion
+type
+batch_fetched
+content
+batch 18 fetched (10 PMIDs)
+meta
+{"batch": 18, "cached": false}
+1793424438339-0
+ts
+2026-10-31T05:27:18.338431+00:00
+step
+46
+node
+ingestion
+type
+batch_fetched
+content
+batch 6 fetched (10 PMIDs)
+meta
+{"batch": 6, "cached": false}
+1793424438473-0
+ts
+2026-10-31T05:27:18.473323+00:00
+step
+47
+node
+ingestion
+type
+stage_completed
+content
+stage fetch: 28 batches (0 already staged)
+meta
+
+1793424438580-0
+ts
+2026-10-31T05:27:18.580098+00:00
+step
+48
+node
+ingestion
+type
+stage_started
+content
+stage link started
+meta
+
+1793424445306-0
+ts
+2026-10-31T05:27:25.305724+00:00
+step
+49
+node
+ingestion
+type
+batch_linked
+content
+batch 0 linked
+meta
+{"batch": 0}
+1793424451219-0
+ts
+2026-10-31T05:27:31.218345+00:00
+step
+50
+node
+ingestion
+type
+batch_linked
+content
+batch 1 linked
+meta
+{"batch": 1}
+1793424456935-0
+ts
+2026-10-31T05:27:36.934468+00:00
+step
+51
+node
+ingestion
+type
+batch_linked
+content
+batch 2 linked
+meta
+{"batch": 2}
+1793424462370-0
+ts
+2026-10-31T05:27:42.369563+00:00
+step
+52
+node
+ingestion
+type
+batch_linked
+content
+batch 3 linked
+meta
+{"batch": 3}
+1793424467788-0
+ts
+2026-10-31T05:27:47.787689+00:00
+step
+53
+node
+ingestion
+type
+batch_linked
+content
+batch 4 linked
+meta
+{"batch": 4}
+1793424470925-0
+ts
+2026-10-31T05:27:50.925297+00:00
+step
+54
+node
+ingestion
+type
+batch_linked
+content
+batch 5 linked
+meta
+{"batch": 5}
+1793424471036-0
+ts
+2026-10-31T05:27:51.035845+00:00
+step
+55
+node
+ingestion
+type
+stage_completed
+content
+stage link: 6 elink batches
+meta
+
+1793424471137-0
+ts
+2026-10-31T05:27:51.136611+00:00
+step
+56
+node
+ingestion
+type
+stage_started
+content
+stage enrich started
+meta
+
+1793424472072-0
+ts
+2026-10-31T05:27:52.071701+00:00
+step
+57
+node
+ingestion
+type
+stage_completed
+content
+stage enrich: 413 descriptors; 672 ancestor terms, 2 without tree numbers, 0 lookup rounds
+meta
+
+1793424472194-0
+ts
+2026-10-31T05:27:52.194549+00:00
+step
+58
+node
+ingestion
+type
+stage_started
+content
+stage parse_load started
+meta
+
+1793424472349-0
+ts
+2026-10-31T05:27:52.349142+00:00
+step
+59
+node
+ingestion
+type
+batch_parsed
+content
+batch 0 parsed: 10 papers, 0 skipped
+meta
+{"batch": 0}
+1793424472376-0
+ts
+2026-10-31T05:27:52.376144+00:00
+step
+60
+node
+ingestion
+type
+batch_parsed
+content
+batch 1 parsed: 10 papers, 0 skipped
+meta
+{"batch": 1}
+1793424472396-0
+ts
+2026-10-31T05:27:52.395758+00:00
+step
+61
+node
+ingestion
+type
+batch_parsed
+content
+batch 2 parsed: 10 papers, 0 skipped
+meta
+{"batch": 2}
+1793424472414-0
+ts
+2026-10-31T05:27:52.414535+00:00
+step
+62
+node
+ingestion
+type
+batch_parsed
+content
+batch 3 parsed: 10 papers, 0 skipped
+meta
+{"batch": 3}
+1793424472436-0
+ts
+2026-10-31T05:27:52.435831+00:00
+step
+63
+node
+ingestion
+type
+batch_parsed
+content
+batch 4 parsed: 10 papers, 0 skipped
+meta
+{"batch": 4}
+1793424472450-0
+ts
+2026-10-31T05:27:52.450356+00:00
+step
+64
+node
+ingestion
+type
+batch_parsed
+content
+batch 5 parsed: 10 papers, 0 skipped
+meta
+{"batch": 5}
+1793424472463-0
+ts
+2026-10-31T05:27:52.463318+00:00
+step
+65
+node
+ingestion
+type
+batch_parsed
+content
+batch 6 parsed: 10 papers, 0 skipped
+meta
+{"batch": 6}
+1793424472479-0
+ts
+2026-10-31T05:27:52.479306+00:00
+step
+66
+node
+ingestion
+type
+batch_parsed
+content
+batch 7 parsed: 10 papers, 0 skipped
+meta
+{"batch": 7}
+1793424472493-0
+ts
+2026-10-31T05:27:52.493538+00:00
+step
+67
+node
+ingestion
+type
+batch_parsed
+content
+batch 8 parsed: 10 papers, 0 skipped
+meta
+{"batch": 8}
+1793424472516-0
+ts
+2026-10-31T05:27:52.516555+00:00
+step
+68
+node
+ingestion
+type
+batch_parsed
+content
+batch 9 parsed: 10 papers, 0 skipped
+meta
+{"batch": 9}
+1793424472534-0
+ts
+2026-10-31T05:27:52.534445+00:00
+step
+69
+node
+ingestion
+type
+batch_parsed
+content
+batch 10 parsed: 10 papers, 0 skipped
+meta
+{"batch": 10}
+1793424472548-0
+ts
+2026-10-31T05:27:52.548633+00:00
+step
+70
+node
+ingestion
+type
+batch_parsed
+content
+batch 11 parsed: 10 papers, 0 skipped
+meta
+{"batch": 11}
+1793424472564-0
+ts
+2026-10-31T05:27:52.564264+00:00
+step
+71
+node
+ingestion
+type
+batch_parsed
+content
+batch 12 parsed: 10 papers, 0 skipped
+meta
+{"batch": 12}
+1793424472585-0
+ts
+2026-10-31T05:27:52.584833+00:00
+step
+72
+node
+ingestion
+type
+batch_parsed
+content
+batch 13 parsed: 10 papers, 0 skipped
+meta
+{"batch": 13}
+1793424472601-0
+ts
+2026-10-31T05:27:52.601499+00:00
+step
+73
+node
+ingestion
+type
+batch_parsed
+content
+batch 14 parsed: 10 papers, 0 skipped
+meta
+{"batch": 14}
+1793424472616-0
+ts
+2026-10-31T05:27:52.615904+00:00
+step
+74
+node
+ingestion
+type
+batch_parsed
+content
+batch 15 parsed: 10 papers, 0 skipped
+meta
+{"batch": 15}
+1793424472633-0
+ts
+2026-10-31T05:27:52.633537+00:00
+step
+75
+node
+ingestion
+type
+batch_parsed
+content
+batch 16 parsed: 10 papers, 0 skipped
+meta
+{"batch": 16}
+1793424472650-0
+ts
+2026-10-31T05:27:52.650609+00:00
+step
+76
+node
+ingestion
+type
+batch_parsed
+content
+batch 17 parsed: 10 papers, 0 skipped
+meta
+{"batch": 17}
+1793424472667-0
+ts
+2026-10-31T05:27:52.666998+00:00
+step
+77
+node
+ingestion
+type
+batch_parsed
+content
+batch 18 parsed: 10 papers, 0 skipped
+meta
+{"batch": 18}
+1793424472684-0
+ts
+2026-10-31T05:27:52.684345+00:00
+step
+78
+node
+ingestion
+type
+batch_parsed
+content
+batch 19 parsed: 10 papers, 0 skipped
+meta
+{"batch": 19}
+1793424472697-0
+ts
+2026-10-31T05:27:52.697082+00:00
+step
+79
+node
+ingestion
+type
+batch_parsed
+content
+batch 20 parsed: 10 papers, 0 skipped
+meta
+{"batch": 20}
+1793424472712-0
+ts
+2026-10-31T05:27:52.712562+00:00
+step
+80
+node
+ingestion
+type
+batch_parsed
+content
+batch 21 parsed: 10 papers, 0 skipped
+meta
+{"batch": 21}
+1793424472729-0
+ts
+2026-10-31T05:27:52.728680+00:00
+step
+81
+node
+ingestion
+type
+batch_parsed
+content
+batch 22 parsed: 10 papers, 0 skipped
+meta
+{"batch": 22}
+1793424472755-0
+ts
+2026-10-31T05:27:52.754668+00:00
+step
+82
+node
+ingestion
+type
+batch_parsed
+content
+batch 23 parsed: 10 papers, 0 skipped
+meta
+{"batch": 23}
+1793424472781-0
+ts
+2026-10-31T05:27:52.780932+00:00
+step
+83
+node
+ingestion
+type
+batch_parsed
+content
+batch 24 parsed: 10 papers, 0 skipped
+meta
+{"batch": 24}
+1793424472795-0
+ts
+2026-10-31T05:27:52.794766+00:00
+step
+84
+node
+ingestion
+type
+batch_parsed
+content
+batch 25 parsed: 10 papers, 0 skipped
+meta
+{"batch": 25}
+1793424472828-0
+ts
+2026-10-31T05:27:52.828362+00:00
+step
+85
+node
+ingestion
+type
+batch_parsed
+content
+batch 26 parsed: 10 papers, 0 skipped
+meta
+{"batch": 26}
+1793424472845-0
+ts
+2026-10-31T05:27:52.844770+00:00
+step
+86
+node
+ingestion
+type
+batch_parsed
+content
+batch 27 parsed: 5 papers, 0 skipped
+meta
+{"batch": 27}
+1793424484589-0
+ts
+2026-10-31T05:28:04.588555+00:00
+step
+87
+node
+ingestion
+type
+papers_written
+content
+batch 0: 10 papers written
+meta
+{"batch": 0, "papers": 10}
+1793424485028-0
+ts
+2026-10-31T05:28:05.027751+00:00
+step
+88
+node
+ingestion
+type
+papers_written
+content
+batch 1: 10 papers written
+meta
+{"batch": 1, "papers": 10}
+1793424485635-0
+ts
+2026-10-31T05:28:05.634835+00:00
+step
+89
+node
+ingestion
+type
+papers_written
+content
+batch 2: 10 papers written
+meta
+{"batch": 2, "papers": 10}
+1793424486217-0
+ts
+2026-10-31T05:28:06.216544+00:00
+step
+90
+node
+ingestion
+type
+papers_written
+content
+batch 3: 10 papers written
+meta
+{"batch": 3, "papers": 10}
+1793424486890-0
+ts
+2026-10-31T05:28:06.889616+00:00
+step
+91
+node
+ingestion
+type
+papers_written
+content
+batch 4: 10 papers written
+meta
+{"batch": 4, "papers": 10}
+1793424487214-0
+ts
+2026-10-31T05:28:07.213709+00:00
+step
+92
+node
+ingestion
+type
+papers_written
+content
+batch 5: 10 papers written
+meta
+{"batch": 5, "papers": 10}
+1793424487565-0
+ts
+2026-10-31T05:28:07.564983+00:00
+step
+93
+node
+ingestion
+type
+papers_written
+content
+batch 6: 10 papers written
+meta
+{"batch": 6, "papers": 10}
+1793424488030-0
+ts
+2026-10-31T05:28:08.029432+00:00
+step
+94
+node
+ingestion
+type
+papers_written
+content
+batch 7: 10 papers written
+meta
+{"batch": 7, "papers": 10}
+1793424489072-0
+ts
+2026-10-31T05:28:09.066337+00:00
+step
+95
+node
+ingestion
+type
+papers_written
+content
+batch 8: 10 papers written
+meta
+{"batch": 8, "papers": 10}
+1793424490727-0
+ts
+2026-10-31T05:28:10.727255+00:00
+step
+96
+node
+ingestion
+type
+papers_written
+content
+batch 9: 10 papers written
+meta
+{"batch": 9, "papers": 10}
+1793424492355-0
+ts
+2026-10-31T05:28:12.354765+00:00
+step
+97
+node
+ingestion
+type
+papers_written
+content
+batch 10: 10 papers written
+meta
+{"batch": 10, "papers": 10}
+1793424493444-0
+ts
+2026-10-31T05:28:13.444190+00:00
+step
+98
+node
+ingestion
+type
+papers_written
+content
+batch 11: 10 papers written
+meta
+{"batch": 11, "papers": 10}
+1793424494333-0
+ts
+2026-10-31T05:28:14.332806+00:00
+step
+99
+node
+ingestion
+type
+papers_written
+content
+batch 12: 10 papers written
+meta
+{"batch": 12, "papers": 10}
+1793424495453-0
+ts
+2026-10-31T05:28:15.453293+00:00
+step
+100
+node
+ingestion
+type
+papers_written
+content
+batch 13: 10 papers written
+meta
+{"batch": 13, "papers": 10}
+1793424739644-0
+ts
+2026-10-31T05:32:19.643807+00:00
+step
+101
+node
+ingestion
+type
+papers_written
+content
+batch 14: 10 papers written
+meta
+{"batch": 14, "papers": 10}
+1793424740677-0
+ts
+2026-10-31T05:32:20.676848+00:00
+step
+102
+node
+ingestion
+type
+papers_written
+content
+batch 15: 10 papers written
+meta
+{"batch": 15, "papers": 10}
+1793424741156-0
+ts
+2026-10-31T05:32:21.155531+00:00
+step
+103
+node
+ingestion
+type
+papers_written
+content
+batch 16: 10 papers written
+meta
+{"batch": 16, "papers": 10}
+1793424741563-0
+ts
+2026-10-31T05:32:21.562978+00:00
+step
+104
+node
+ingestion
+type
+papers_written
+content
+batch 17: 10 papers written
+meta
+{"batch": 17, "papers": 10}
+1793424741847-0
+ts
+2026-10-31T05:32:21.846870+00:00
+step
+105
+node
+ingestion
+type
+papers_written
+content
+batch 18: 10 papers written
+meta
+{"batch": 18, "papers": 10}
+1793424742286-0
+ts
+2026-10-31T05:32:22.285831+00:00
+step
+106
+node
+ingestion
+type
+papers_written
+content
+batch 19: 10 papers written
+meta
+{"batch": 19, "papers": 10}
+1793424742508-0
+ts
+2026-10-31T05:32:22.508316+00:00
+step
+107
+node
+ingestion
+type
+papers_written
+content
+batch 20: 10 papers written
+meta
+{"batch": 20, "papers": 10}
+1793424742935-0
+ts
+2026-10-31T05:32:22.935130+00:00
+step
+108
+node
+ingestion
+type
+papers_written
+content
+batch 21: 10 papers written
+meta
+{"batch": 21, "papers": 10}
+1793424743392-0
+ts
+2026-10-31T05:32:23.391786+00:00
+step
+109
+node
+ingestion
+type
+papers_written
+content
+batch 22: 10 papers written
+meta
+{"batch": 22, "papers": 10}
+1793424743826-0
+ts
+2026-10-31T05:32:23.826316+00:00
+step
+110
+node
+ingestion
+type
+papers_written
+content
+batch 23: 10 papers written
+meta
+{"batch": 23, "papers": 10}
+1793424744107-0
+ts
+2026-10-31T05:32:24.107428+00:00
+step
+111
+node
+ingestion
+type
+papers_written
+content
+batch 24: 10 papers written
+meta
+{"batch": 24, "papers": 10}
+1793424744509-0
+ts
+2026-10-31T05:32:24.509033+00:00
+step
+112
+node
+ingestion
+type
+papers_written
+content
+batch 25: 10 papers written
+meta
+{"batch": 25, "papers": 10}
+1793424744833-0
+ts
+2026-10-31T05:32:24.833404+00:00
+step
+113
+node
+ingestion
+type
+papers_written
+content
+batch 26: 10 papers written
+meta
+{"batch": 26, "papers": 10}
+1793424745171-0
+ts
+2026-10-31T05:32:25.171069+00:00
+step
+114
+node
+ingestion
+type
+papers_written
+content
+batch 27: 5 papers written
+meta
+{"batch": 27, "papers": 5}
+1793424745343-0
+ts
+2026-10-31T05:32:25.342909+00:00
+step
+115
+node
+ingestion
+type
+stage_completed
+content
+stage parse_load: 275 papers written, 0 skipped
+meta
+
+1793424748492-0
+ts
+2026-10-31T05:32:28.491818+00:00
+step
+116
+node
+ingestion
+type
+completed
+content
+ingestion complete: 275 papers, 678 citations
+meta
+{"papers": 275, "citations": 678}

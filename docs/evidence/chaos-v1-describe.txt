@@ -1,0 +1,25 @@
+Execution Info:
+  WorkflowId            ingest-v1-chaos
+  RunId                 01a19059-b13b-777b-b278-9b853535e557
+  Type                  IngestionWorkflow
+  Namespace             default
+  TaskQueue             ingestion
+  AssignedBuildId        
+  StartTime             37 minutes ago
+  CloseTime             10 minutes ago
+  ExecutionTime         37 minutes ago
+  SearchAttributes      map[BuildIds:metadata:{key:"encoding"  value:"json/plain"}  metadata:{key:"type"  value:"KeywordList"}  data:"[\"unversioned\",\"unversioned:1b5b6f8243151d5b6f9550b558d974a8\"]"]
+  StateTransitionCount  321
+  HistoryLength         440
+  HistorySize           70322
+  RootWorkflowId        ingest-v1-chaos
+  RootRunId             01a19059-b13b-777b-b278-9b853535e557
+Extended Execution Info:
+  CancelRequested    false
+  OriginalStartTime  37 minutes ago
+
+Results:
+  RunTime         26m28.96s
+  Status          COMPLETED
+  Result          {"added":275,"authors":1649,"citations":{"both":674,"dangling_elink":5080,"dangling_xml":5154,"elink_internal":674,"elink_only":0,"xml_internal":678,"xml_only":4},"corpus_stats":{"after_cutoff":198,"authors_multi_paper":135,"before_cutoff":77,"cites_by_source":{"both":674,"xml":4},"cites_total":678,"cutoff_year":2016,"date_span_years":20,"longest_chain":13,"max_year":2026,"mesh_top_level_trees":["A","B","C","D","E","F","G","H","I","J","L","M","N","Z"],"min_year":2006,"node_counts":{"Author":1649,"Journal":146,"MeshTerm":1099,"Notice":36,"Paper":275},"papers":275,"papers_with_notices":27,"relationship_counts":{"AUTHORED":1877,"BROADER":1418,"CITES":678,"COMMENTED_IN":30,"COMMENTS_ON":2,"CORRECTED_BY":3,"MENTIONS":3664,"PUBLISHED_IN":275,"RETRACTED_BY":1},"retracted_papers":1},"corpus_version":"v1-chaos","journals":146,"mesh_terms":1099,"orphan_authors_removed":0,"papers":275,"removed":0,"run_id":"ingest-v1-chaos","skipped_records":null,"unchanged":0}
+  ResultEncoding  json/plain

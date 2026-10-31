@@ -1,0 +1,4 @@
+requests logged: 65
+per worker: {'local-host': 5, 'dfb2a6a0b649': 3, '52e10bb9b709': 13, 'd6d77d683a51': 44}
+max requests in any 1-second window: 3 (limit 3.0) at ts_ms=1793380869427
+RESULT: PASS
