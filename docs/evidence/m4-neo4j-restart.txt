@@ -1,0 +1,83 @@
+# Plan 09 Task 6 Step 4 — kill Neo4j during a query, restart it (brief §9.3)
+# Run on 2026-10-31 (UTC), model groq:openai/gpt-oss-120b
+
+## Commands (from orchestration-service/, PYTHONPATH=src;..)
+python scripts/chaos_kill.py thinking:neo1 graph_query orchestration-neo4j-1   # armed first
+python scripts/start_query.py "Which journal published PMID 35269852, and has it been retracted?" neo1
+docker start orchestration-neo4j-1   # immediately after the kill
+
+## chaos_kill.py output
+2026-10-31T15:49:49.923368+00:00 saw graph_query 1793461789924-0 read-only query
+2026-10-31T15:49:51.141940+00:00 kill orchestration-neo4j-1 -> orchestration-neo4j-1
+neo4j started 15:49:52, healthy 15:50:25
+
+## Worker log: run_agent attempts that failed (the next node's EXPLAIN could not reach Neo4j)
+2026-10-31 15:50:04,945 WARNING temporalio.activity: Completing activity as failed ({'activity_id': '1', 'activity_type': 'run_agent', 'attempt': 1, 'namespace': 'default', 'task_queue': 'research', 'workflow_id': 'research-neo1',
+agent.ports.GraphUnavailable: Couldn't connect to neo4j:7687 (resolved to ('172.19.0.6:7687',)):
+2026-10-31 15:50:10,174 WARNING temporalio.activity: Completing activity as failed ({'activity_id': '1', 'activity_type': 'run_agent', 'attempt': 2, 'namespace': 'default', 'task_queue': 'research', 'workflow_id': 'research-neo1',
+agent.ports.GraphUnavailable: Couldn't connect to neo4j:7687 (resolved to ('172.19.0.6:7687',)):
+
+## Temporal history of research-neo1
+15:49:40 EVENT_TYPE_WORKFLOW_EXECUTION_STARTED 
+15:49:40 EVENT_TYPE_WORKFLOW_TASK_SCHEDULED 
+15:49:40 EVENT_TYPE_WORKFLOW_TASK_STARTED 
+15:49:40 EVENT_TYPE_WORKFLOW_TASK_COMPLETED 
+15:49:40 EVENT_TYPE_ACTIVITY_TASK_SCHEDULED 
+15:50:20 EVENT_TYPE_ACTIVITY_TASK_STARTED attempt=3
+15:50:33 EVENT_TYPE_ACTIVITY_TASK_COMPLETED 
+15:50:33 EVENT_TYPE_WORKFLOW_TASK_SCHEDULED 
+15:50:33 EVENT_TYPE_WORKFLOW_TASK_STARTED 
+15:50:33 EVENT_TYPE_WORKFLOW_TASK_COMPLETED 
+15:50:33 EVENT_TYPE_WORKFLOW_EXECUTION_COMPLETED 
+
+## check_stream.py neo1
+1793461780911-0  step=  1  plan             node_enter           planning sub-questions and resolving entities
+1793461782717-0  step=  2  plan             llm_call             plan
+1793461782719-0  step=  3  plan             reasoning            sub-questions: Retrieve the title of the journal that the paper with PMID 35269852 was pub
+1793461782730-0  step=  4  plan             reasoning            resolved pmid '35269852' → RETRACTED: Metformin and Breast Cancer: Where Are We Now?
+1793461782731-0  step=  5  plan             node_exit            plan done
+1793461782735-0  step=  6  generate_cypher  node_enter           writing Cypher for: Retrieve the title of the journal that the paper with PMID 35269852 wa
+1793461789820-0  step=  7  generate_cypher  llm_call             generate_cypher
+1793461789822-0  step=  8  generate_cypher  reasoning            The query locates the paper with the given PMID, follows its PUBLISHED_IN relationship to 
+1793461789823-0  step=  9  generate_cypher  node_exit            cypher drafted
+1793461789826-0  step= 10  validate_cypher  node_enter           checking the query is safe and valid
+1793461789920-0  step= 11  validate_cypher  reasoning            query accepted
+1793461789921-0  step= 12  validate_cypher  node_exit            validated
+1793461789923-0  step= 13  execute          node_enter           running the query
+1793461789924-0  step= 14  execute          graph_query          read-only query
+1793461789942-0  step= 15  execute          graph_result         1 rows
+1793461789942-1  step= 16  execute          node_exit            executed
+1793461789944-0  step= 17  observe          node_enter           looking at the results of sub-question 1
+1793461797144-0  step= 18  observe          llm_call             observe
+1793461797146-0  step= 19  observe          reasoning            The query returned one row showing that PMID 35269852 was published in the International J
+1793461797147-0  step= 20  observe          node_exit            decision: next
+1793461797150-0  step= 21  generate_cypher  node_enter           writing Cypher for: Determine whether the paper with PMID 35269852 has the property retrac
+1793461804928-0  step= 22  generate_cypher  llm_call             generate_cypher
+1793461804929-0  step= 23  generate_cypher  reasoning            The query fetches the paper with the given PMID, ensures it is in the corpus, and returns 
+1793461804930-0  step= 24  generate_cypher  node_exit            cypher drafted
+1793461804932-0  step= 25  validate_cypher  node_enter           checking the query is safe and valid
+1793461822810-0  step= 26  validate_cypher  checkpoint           resumed from checkpoint after the previous attempt stopped; continuing at node 'validate_c
+1793461822812-0  step= 27  validate_cypher  reasoning            query accepted
+1793461822812-1  step= 28  validate_cypher  node_exit            validated
+1793461822819-0  step= 29  execute          node_enter           running the query
+1793461822820-0  step= 30  execute          graph_query          read-only query
+1793461822936-0  step= 31  execute          graph_result         1 rows
+1793461822937-0  step= 32  execute          node_exit            executed
+1793461822942-0  step= 33  observe          node_enter           looking at the results of sub-question 2
+1793461824140-0  step= 34  observe          llm_call             observe
+1793461824142-0  step= 35  observe          reasoning            The query returned one row showing pmid 35269852 with retracted = true. → done
+1793461824142-1  step= 36  observe          node_exit            decision: done
+1793461824145-0  step= 37  synthesize       node_enter           drafting claims from the evidence
+1793461832023-0  step= 38  synthesize       llm_call             synthesize
+1793461832026-0  step= 39  synthesize       reasoning            2 claims drafted
+1793461832026-1  step= 40  synthesize       node_exit            draft ready
+1793461832029-0  step= 41  verify           node_enter           verifying 2 claims against the graph
+1793461833101-0  step= 42  verify           verification         claim 1 passed: PMID 35269852 was published in the International journal of molecular scie
+1793461833220-0  step= 43  verify           verification         claim 2 passed: PMID 35269852 has been retracted.
+1793461833221-0  step= 44  verify           reasoning            verification complete: 2 checked, 2 passed, 0 dropped
+1793461833221-1  step= 45  verify           node_exit            answer ready
+1793461833237-0  step= 46  answer           answer               - PMID 35269852 was published in the International journal of molecular sciences. (PMID 35
+
+node_enter counts: {'plan': 1, 'generate_cypher': 2, 'validate_cypher': 2, 'execute': 2, 'observe': 2, 'synthesize': 1, 'verify': 1}
+checkpoint events: 1
+steps monotonic and unique: PASS

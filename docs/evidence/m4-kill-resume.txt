@@ -1,0 +1,111 @@
+# Plan 09 Task 6 — kill the worker mid-query, resume from the last checkpoint (brief §5.2, §9.3)
+# Run on 2026-10-31 (UTC), model groq:openai/gpt-oss-120b
+
+## Commands (from orchestration-service/, PYTHONPATH=src;..)
+python scripts/chaos_kill.py thinking:kill1 node_exit orchestration-worker-1 2   # armed first
+python scripts/start_query.py "Which authors have co-authored with someone who published on breast neoplasms?" kill1
+# ~40 s after the kill (heartbeat timeout is 30 s):
+docker start orchestration-worker-1
+python scripts/check_stream.py kill1
+
+## chaos_kill.py output
+2026-10-31T15:39:37.538757+00:00 saw node_exit 1793461177537-0 cypher drafted
+2026-10-31T15:39:38.419520+00:00 kill orchestration-worker-1 -> orchestration-worker-1
+
+## Temporal history of research-kill1 (attempt 1 died with the worker; only the final attempt's STARTED is recorded)
+15:39:28 EVENT_TYPE_WORKFLOW_EXECUTION_STARTED 
+15:39:28 EVENT_TYPE_WORKFLOW_TASK_SCHEDULED 
+15:39:28 EVENT_TYPE_WORKFLOW_TASK_STARTED 
+15:39:28 EVENT_TYPE_WORKFLOW_TASK_COMPLETED 
+15:39:28 EVENT_TYPE_ACTIVITY_TASK_SCHEDULED 
+15:40:31 EVENT_TYPE_ACTIVITY_TASK_STARTED attempt=2
+15:41:58 EVENT_TYPE_ACTIVITY_TASK_COMPLETED 
+15:41:58 EVENT_TYPE_WORKFLOW_TASK_SCHEDULED 
+15:41:58 EVENT_TYPE_WORKFLOW_TASK_STARTED 
+15:41:58 EVENT_TYPE_WORKFLOW_TASK_COMPLETED 
+15:41:58 EVENT_TYPE_WORKFLOW_EXECUTION_COMPLETED 
+
+## check_stream.py kill1
+1793461168622-0  step=  1  plan             node_enter           planning sub-questions and resolving entities
+1793461170483-0  step=  2  plan             llm_call             plan
+1793461170485-0  step=  3  plan             reasoning            sub-questions: Find all papers that mention the MeSH term "breast neoplasms". | Identify t
+1793461171090-0  step=  4  plan             reasoning            resolved mesh 'breast neoplasms' → Breast Neoplasms
+1793461171093-0  step=  5  plan             node_exit            plan done
+1793461171100-0  step=  6  generate_cypher  node_enter           writing Cypher for: Find all papers that mention the MeSH term "breast neoplasms".
+1793461177529-0  step=  7  generate_cypher  llm_call             generate_cypher
+1793461177535-0  step=  8  generate_cypher  reasoning            The query finds all in‑corpus papers that mention the MeSH term Breast Neoplasms (or any o
+1793461177537-0  step=  9  generate_cypher  node_exit            cypher drafted
+1793461177545-0  step= 10  validate_cypher  node_enter           checking the query is safe and valid
+1793461232796-0  step= 11  validate_cypher  checkpoint           resumed from checkpoint after the previous attempt stopped; continuing at node 'validate_c
+1793461232798-0  step= 12  validate_cypher  reasoning            query accepted
+1793461232799-0  step= 13  validate_cypher  node_exit            validated
+1793461232811-0  step= 14  execute          node_enter           running the query
+1793461232813-0  step= 15  execute          graph_query          read-only query
+1793461232890-0  step= 16  execute          graph_result         29 rows
+1793461232891-0  step= 17  execute          node_exit            executed
+1793461232897-0  step= 18  observe          node_enter           looking at the results of sub-question 1
+1793461234055-0  step= 19  observe          llm_call             observe
+1793461234057-0  step= 20  observe          reasoning            The query returned 29 papers that mention the MeSH term "breast neoplasms", providing PMID
+1793461234059-0  step= 21  observe          node_exit            decision: next
+1793461234068-0  step= 22  generate_cypher  node_enter           writing Cypher for: Identify the authors who authored those papers.
+1793461243785-0  step= 23  generate_cypher  llm_call             generate_cypher
+1793461243787-0  step= 24  generate_cypher  reasoning            The query finds authors of breast neoplasm papers, then retrieves their co‑authors on any 
+1793461243788-0  step= 25  generate_cypher  node_exit            cypher drafted
+1793461243792-0  step= 26  validate_cypher  node_enter           checking the query is safe and valid
+1793461244488-0  step= 27  validate_cypher  reasoning            query accepted
+1793461244489-0  step= 28  validate_cypher  node_exit            validated
+1793461244494-0  step= 29  execute          node_enter           running the query
+1793461244495-0  step= 30  execute          graph_query          read-only query
+1793461244707-0  step= 31  execute          graph_result         200 rows
+1793461244708-0  step= 32  execute          node_exit            executed
+1793461244718-0  step= 33  observe          node_enter           looking at the results of sub-question 2
+1793461248897-0  step= 34  observe          llm_call             observe
+1793461248900-0  step= 35  observe          reasoning            The result rows list distinct co‑authors (author_id, name) together with the PMID of the b
+1793461248902-0  step= 36  observe          node_exit            decision: next
+1793461248908-0  step= 37  generate_cypher  node_enter           writing Cypher for: Find authors who have co‑authored a paper with any of the authors iden
+1793461258843-0  step= 38  generate_cypher  llm_call             generate_cypher
+1793461258847-0  step= 39  generate_cypher  reasoning            The query finds authors who share a paper with any author of a breast neoplasm paper (excl
+1793461258849-0  step= 40  generate_cypher  node_exit            cypher drafted
+1793461258857-0  step= 41  validate_cypher  node_enter           checking the query is safe and valid
+1793461259571-0  step= 42  validate_cypher  reasoning            query accepted
+1793461259573-0  step= 43  validate_cypher  node_exit            validated
+1793461259577-0  step= 44  execute          node_enter           running the query
+1793461259578-0  step= 45  execute          graph_query          read-only query
+1793461259722-0  step= 46  execute          graph_result         151 rows
+1793461259723-0  step= 47  execute          node_exit            executed
+1793461259727-0  step= 48  observe          node_enter           looking at the results of sub-question 3
+1793461263846-0  step= 49  observe          llm_call             observe
+1793461263849-0  step= 50  observe          reasoning            The query returned 151 distinct co‑author rows, each with author_id, name, and PMID of a p
+1793461263850-0  step= 51  observe          node_exit            decision: next
+1793461263856-0  step= 52  synthesize       node_enter           drafting claims from the evidence
+1793461317103-0  step= 53  synthesize       llm_call             synthesize
+1793461317106-0  step= 54  synthesize       reasoning            20 claims drafted
+1793461317107-0  step= 55  synthesize       node_exit            draft ready
+1793461317113-0  step= 56  verify           node_enter           verifying 20 claims against the graph
+1793461317681-0  step= 57  verify           verification         claim 1 passed: Ahmet Dirican has co-authored with someone who published on breast neoplas
+1793461317709-0  step= 58  verify           verification         claim 2 passed: Aragaki Aaron K has co-authored with someone who published on breast neopl
+1793461317732-0  step= 59  verify           verification         claim 3 passed: Azoulay Laurent has co-authored with someone who published on breast neopl
+1793461317754-0  step= 60  verify           verification         claim 4 passed: Bayraktar Soley has co-authored with someone who published on breast neopl
+1793461317777-0  step= 61  verify           verification         claim 5 passed: Behrouzi Bita has co-authored with someone who published on breast neoplas
+1793461317796-0  step= 62  verify           verification         claim 6 passed: Berger Adam C has co-authored with someone who published on breast neoplas
+1793461317830-0  step= 63  verify           verification         claim 7 passed: Berlin J A has co-authored with someone who published on breast neoplasms.
+1793461317850-0  step= 64  verify           verification         claim 8 passed: Blandino Giovanni has co-authored with someone who published on breast neo
+1793461317874-0  step= 65  verify           verification         claim 9 passed: Blanter Julia has co-authored with someone who published on breast neoplas
+1793461317895-0  step= 66  verify           verification         claim 10 passed: Bookwalter D B has co-authored with someone who published on breast neopl
+1793461318092-0  step= 67  verify           verification         claim 11 passed: Bowker Samantha L has co-authored with someone who published on breast ne
+1793461318139-0  step= 68  verify           verification         claim 12 passed: Brenin David R has co-authored with someone who published on breast neopl
+1793461318170-0  step= 69  verify           verification         claim 13 passed: Buse John B has co-authored with someone who published on breast neoplasm
+1793461318190-0  step= 70  verify           verification         claim 14 passed: Cardwell Chris R has co-authored with someone who published on breast neo
+1793461318217-0  step= 71  verify           verification         claim 15 passed: Cascetta Krystal has co-authored with someone who published on breast neo
+1793461318260-0  step= 72  verify           verification         claim 16 passed: Chai Boyang has co-authored with someone who published on breast neoplasm
+1793461318281-0  step= 73  verify           verification         claim 17 passed: Chen Kai has co-authored with someone who published on breast neoplasms.
+1793461318295-0  step= 74  verify           verification         claim 18 passed: Chen Wendy Y has co-authored with someone who published on breast neoplas
+1793461318309-0  step= 75  verify           verification         claim 19 passed: Chlebowski Rowan T has co-authored with someone who published on breast n
+1793461318322-0  step= 76  verify           verification         claim 20 passed: Christopher Adrienne has co-authored with someone who published on breast
+1793461318323-0  step= 77  verify           reasoning            verification complete: 20 checked, 20 passed, 0 dropped
+1793461318324-0  step= 78  verify           node_exit            answer ready
+1793461318343-0  step= 79  answer           answer               - Ahmet Dirican has co-authored with someone who published on breast neoplasms. (PMID 2324
+
+node_enter counts: {'plan': 1, 'generate_cypher': 3, 'validate_cypher': 3, 'execute': 3, 'observe': 3, 'synthesize': 1, 'verify': 1}
+checkpoint events: 1
+steps monotonic and unique: PASS
