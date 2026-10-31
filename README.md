@@ -257,3 +257,10 @@ After that, `GET /queries/{id}/stream` → 404 "expired", while `GET /queries/{i
 - **"Longest chain" = 13** counts papers on the longest simple `CITES` path, found by a cycle-safe depth-first search
   in the worker. The search is exhaustive at this size, but it would need a bound for a much larger corpus.
 - **The eval's text scoring is approximate:** lower-cased substring match of gold names in the answer (EVAL.md).
+
+## License
+
+[MIT](LICENSE) for the code in this repository. Third-party software keeps its own terms:
+- the Neo4j Enterprise image runs under Neo4j's evaluation licence (`NEO4J_ACCEPT_LICENSE_AGREEMENT=eval`);
+- PubMed/MeSH data is fetched from NCBI under its usage policies and is not redistributed here, apart from small
+  test fixtures.
