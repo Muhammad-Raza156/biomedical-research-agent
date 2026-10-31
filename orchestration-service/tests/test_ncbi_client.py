@@ -21,13 +21,24 @@ def make_client(handler, api_key: str = "") -> tuple[NcbiClient, CountingLimiter
 async def test_esearch_returns_sorted_pmids_and_uses_limiter():
     def handler(request: httpx.Request) -> httpx.Response:
         assert request.url.path.endswith("esearch.fcgi")
-        assert request.url.params["datetype"] == "pdat"
+        assert "datetype=pdat" in request.content.decode()
         return httpx.Response(200, json={"esearchresult": {"count": "3", "idlist": ["30", "10", "20"]}})
 
     client, limiter = make_client(handler)
     assert await client.esearch("q", "2005", "2025", max_results=400) == ["10", "20", "30"]
     assert limiter.calls == ["esearch"]
 
+async def test_esearch_keeps_the_api_key_out_of_the_url():
+    seen = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen["query"] = request.url.query
+        seen["key_in_body"] = "api_key=secret" in request.content.decode()
+        return httpx.Response(200, json={"esearchresult": {"count": "0", "idlist": []}})
+
+    client, _ = make_client(handler, api_key="secret")
+    await client.esearch("q", "2005", "2025", max_results=400)
+    assert seen == {"query": b"", "key_in_body": True}
 
 async def test_esearch_more_hits_than_max_is_permanent():
     def handler(request):

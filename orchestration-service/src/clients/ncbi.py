@@ -38,7 +38,7 @@ class NcbiClient:
         """Return all PMIDs matching the query in the date range, sorted ascending."""
         params = {"db": "pubmed", "term": term, "datetype": "pdat", "mindate": mindate,
                   "maxdate": maxdate, "retmax": str(max_results), "retmode": "json"}
-        response = await self._request("esearch.fcgi", "esearch", params, method="GET")
+        response = await self._request("esearch.fcgi", "esearch", params)
         result = response.json().get("esearchresult", {})
         if "ERROR" in result:
             raise NcbiRetryableError(f"esearch error: {result['ERROR']}")
@@ -58,16 +58,12 @@ class NcbiClient:
         data = {"dbfrom": "pubmed", "db": "pubmed", "linkname": "pubmed_pubmed_refs", "id": pmids}
         return (await self._request("elink.fcgi", "elink", data)).content
 
-    async def _request(self, endpoint: str, label: str, params: dict[str, Any],
-                       method: str = "POST") -> httpx.Response:
+    async def _request(self, endpoint: str, label: str, params: dict[str, Any]) -> httpx.Response:
         await self._limiter.acquire(label)
         url = self.BASE_URL + endpoint
         payload = {**params, **self._common}
         try:
-            if method == "GET":
-                response = await self._http.get(url, params=payload, timeout=60)
-            else:
-                response = await self._http.post(url, data=payload, timeout=120)
+            response = await self._http.post(url, data=payload, timeout=120)
         except httpx.TransportError as exc:  # DNS, connection reset, timeout
             raise NcbiRetryableError(f"{label} network error: {exc!r}") from exc
 
