@@ -98,7 +98,7 @@ class Settings:
         )
 
         return cls(
-            llm_model=s("LLM_MODEL", "google_genai:gemini-2.5-flash"),
+            llm_model=s("LLM_MODEL", "groq:openai/gpt-oss-120b"),
             llm_temperature=f("LLM_TEMPERATURE", 0.0),
             llm_requests_per_minute=f("LLM_REQUESTS_PER_MINUTE", 8.0),
             llm_price_input_per_mtok=f("LLM_PRICE_INPUT_PER_MTOK", 0.0),
