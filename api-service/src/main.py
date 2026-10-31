@@ -1,11 +1,53 @@
-"""FastAPI entrypoint (placeholder — replaced in plan 10)."""
+"""FastAPI entrypoint: only starts and observes work. No agent, ingestion or Cypher logic here."""
 
-from fastapi import FastAPI
+from __future__ import annotations
 
-app = FastAPI(title="Biomedical Research Agent API")
+import asyncio
+import logging
+from contextlib import asynccontextmanager
+
+import redis.asyncio as aioredis
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+
+from config import ApiSettings
+from gateway import Conflict, NotFound, Unavailable, WorkflowGateway
+from routes import corpus, health, ingest, queries
 
 
-@app.get("/ping")
-async def ping() -> dict[str, str]:
-    """Liveness probe used while the real API is not built yet."""
-    return {"status": "ok"}
+def create_app(settings: ApiSettings | None = None, gateway=None, redis=None) -> FastAPI:
+    """Build the app; tests pass fakes for gateway/redis."""
+    settings = settings or ApiSettings.from_env()
+
+    @asynccontextmanager
+    async def lifespan(app: FastAPI):
+        app.state.settings = settings
+        app.state.redis = redis or aioredis.from_url(settings.redis_url, decode_responses=True)
+        app.state.gateway = gateway or WorkflowGateway(settings.temporal_address, settings.temporal_namespace)
+        connector = None if gateway else asyncio.create_task(app.state.gateway.connect_forever())
+        yield
+        if connector:
+            connector.cancel()
+        await app.state.redis.aclose()
+
+    app = FastAPI(title="Biomedical Research Agent API", version="1.0.0", lifespan=lifespan)
+
+    @app.exception_handler(NotFound)
+    async def _not_found(request: Request, exc: NotFound) -> JSONResponse:
+        return JSONResponse({"detail": str(exc) or "not found"}, status_code=404)
+
+    @app.exception_handler(Conflict)
+    async def _conflict(request: Request, exc: Conflict) -> JSONResponse:
+        return JSONResponse({"detail": str(exc)}, status_code=409)
+
+    @app.exception_handler(Unavailable)
+    async def _unavailable(request: Request, exc: Unavailable) -> JSONResponse:
+        return JSONResponse({"detail": str(exc)}, status_code=503)
+
+    for router in (ingest.router, queries.router, corpus.router, health.router):
+        app.include_router(router)
+    return app
+
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+app = create_app()
