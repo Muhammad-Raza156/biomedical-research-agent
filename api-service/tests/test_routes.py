@@ -144,3 +144,13 @@ def test_ingest_start_status_and_corpus_stats(client, fakes):
     assert client.get("/corpus/stats").status_code == 503
     redis.kv["corpus:stats"] = json.dumps({"papers": 275})
     assert client.get("/corpus/stats").json() == {"papers": 275}
+
+
+def test_answer_is_returned_when_the_workflow_finishes_between_describe_and_query(client, fakes):
+    # describe() still said RUNNING, but the status query already sees the finished state (race seen in the eval)
+    gateway, redis = fakes
+    gateway.statuses["research-q1"] = "RUNNING"
+    gateway.queries["research-q1"] = {"status": "completed", "clarification": None}
+    redis.kv[answer_key("q1")] = json.dumps(ANSWER)
+    body = client.get("/queries/q1").json()
+    assert body["status"] == "completed" and body["answer"]["claims"][0]["pmids"] == ["1"]

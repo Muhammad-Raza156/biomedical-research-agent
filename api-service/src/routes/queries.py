@@ -37,6 +37,9 @@ async def create_query(body: QuestionIn, request: Request) -> QueryIdOut:
     return QueryIdOut(query_id=query_id)
 
 
+_FINISHED = {QueryStatus.COMPLETED: "COMPLETED", QueryStatus.CANCELLED: "CANCELED", QueryStatus.FAILED: "FAILED"}
+
+
 @router.get("/queries/{query_id}", response_model=QueryStatusOut)
 async def get_query(query_id: str, request: Request) -> QueryStatusOut:
     """Status, clarification question, final answer with claims and token usage."""
@@ -45,7 +48,10 @@ async def get_query(query_id: str, request: Request) -> QueryStatusOut:
     status = await gateway.status(workflow_id)
     if status == "RUNNING":
         live = await gateway.query(workflow_id, STATUS_QUERY)
-        return QueryStatusOut(query_id=query_id, status=live["status"], clarification=live["clarification"])
+        if live["status"] in (QueryStatus.RUNNING, QueryStatus.AWAITING_INPUT):
+            return QueryStatusOut(query_id=query_id, status=live["status"], clarification=live["clarification"])
+        # Finished between describe() and the query: report it like a finished workflow (answer from Redis).
+        status = _FINISHED[live["status"]]
     stored = await redis.get(answer_key(query_id))
     data = json.loads(stored) if stored else {}
     if status == "COMPLETED":
