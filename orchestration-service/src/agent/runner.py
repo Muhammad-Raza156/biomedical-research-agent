@@ -39,7 +39,7 @@ async def run_once(graph, deps: AgentDeps, query_id: str, question: str,
             return RunOutcome("awaiting_input", interrupt=pending[0].value, step=values.get("step", 0))
         graph_input = Command(resume=resume_value)
     elif snapshot.next:                           # a previous attempt died mid-run
-        deps.resume_note = (f"resumed from checkpoint after a worker restart; "
+        deps.resume_note = (f"resumed from checkpoint after the previous attempt stopped; "
                             f"continuing at node '{snapshot.next[0]}'")
         graph_input = None
     else:                                         # brand-new thread

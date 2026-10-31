@@ -8,6 +8,9 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from agent.ports import TokenUsage
 from clients.ncbi import Limiter
 
+# Groq checks json_schema replies server-side and answers 400 with one of these codes when the model misses
+SCHEMA_MISS_CODES = ("output_parse_failed", "json_validate_failed")
+
 
 class LLMOutputError(Exception):
     """The model's output did not fit the schema (retried by the activity, then fails the run)."""
@@ -35,8 +38,8 @@ class LangChainLLM:
             await self._limiter.acquire("llm")
             try:
                 out = await runnable.ainvoke([SystemMessage(content=system), HumanMessage(content=user)])
-            except Exception as exc:  # Groq validates JSON server-side and answers 400 output_parse_failed
-                if "output_parse_failed" not in str(exc):
+            except Exception as exc:
+                if not any(code in str(exc) for code in SCHEMA_MISS_CODES):
                     raise
                 error = exc
                 continue

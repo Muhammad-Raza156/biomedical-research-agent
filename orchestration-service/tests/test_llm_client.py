@@ -63,10 +63,11 @@ async def test_two_bad_replies_raise(monkeypatch):
 
 
 async def test_server_side_parse_failure_is_asked_again_but_other_errors_propagate(monkeypatch):
-    groq_400 = RuntimeError("Error code: 400 - {'error': {'code': 'output_parse_failed'}}")
-    llm, limiter = make_llm([groq_400, GOOD], monkeypatch)
-    parsed, _ = await llm.structured("sys", "user", ObserveOutput)
-    assert parsed.decision == "next" and limiter.calls == 2
+    for code in ("output_parse_failed", "json_validate_failed"):   # Groq uses both for a reply off the schema
+        groq_400 = RuntimeError(f"Error code: 400 - {{'error': {{'code': '{code}'}}}}")
+        llm, limiter = make_llm([groq_400, GOOD], monkeypatch)
+        parsed, _ = await llm.structured("sys", "user", ObserveOutput)
+        assert parsed.decision == "next" and limiter.calls == 2
     llm, _ = make_llm([RuntimeError("Error code: 401 - invalid api key")], monkeypatch)
     with pytest.raises(RuntimeError, match="401"):
         await llm.structured("sys", "user", ObserveOutput)
