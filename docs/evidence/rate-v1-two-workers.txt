@@ -1,0 +1,4 @@
+requests logged: 40
+per worker: {'ee2b1eba56c5': 22, '7d6708b757c1': 18}
+max requests in any 1-second window: 3 (limit 3.0) at ts_ms=1793427536331
+RESULT: PASS
