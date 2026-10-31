@@ -7,7 +7,7 @@ import pytest
 import redis.asyncio as aioredis
 
 from config import ApiSettings
-from main import create_app
+from main import create_app, make_redis
 from tests.fakes import FakeGateway, event_fields
 
 pytestmark = pytest.mark.integration
@@ -35,3 +35,13 @@ async def test_five_subscribers_each_get_every_event_in_order():
             results = await asyncio.gather(*subscribers)
     assert all(result == ids for result in results)
     await redis.delete(KEY)
+
+
+async def test_api_redis_client_survives_a_block_longer_than_the_default_socket_timeout():
+    # redis-py 8 defaults socket_timeout to 5 s; XREAD BLOCK 15000 used to raise TimeoutError and kill the stream
+    settings = ApiSettings.from_env({"REDIS_URL": "redis://localhost:16379/15", "SSE_BLOCK_MS": "6000"})
+    redis = make_redis(settings)
+    try:
+        assert await redis.xread({"thinking:never-written": "0-0"}, block=settings.sse_block_ms) == []
+    finally:
+        await redis.aclose()

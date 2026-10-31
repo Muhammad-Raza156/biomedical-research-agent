@@ -15,6 +15,15 @@ from gateway import Conflict, NotFound, Unavailable, WorkflowGateway
 from routes import corpus, health, ingest, queries
 
 
+def make_redis(settings: ApiSettings) -> aioredis.Redis:
+    """Redis client for the API (lazy: connects on first command).
+
+    The socket timeout must outlast the longest XREAD BLOCK, or redis-py's 5 s default ends every SSE stream.
+    """
+    return aioredis.from_url(settings.redis_url, decode_responses=True,
+                             socket_timeout=settings.sse_block_ms / 1000 + 5, socket_connect_timeout=5)
+
+
 def create_app(settings: ApiSettings | None = None, gateway=None, redis=None) -> FastAPI:
     """Build the app; tests pass fakes for gateway/redis."""
     settings = settings or ApiSettings.from_env()
@@ -22,7 +31,7 @@ def create_app(settings: ApiSettings | None = None, gateway=None, redis=None) ->
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         app.state.settings = settings
-        app.state.redis = redis or aioredis.from_url(settings.redis_url, decode_responses=True)
+        app.state.redis = redis or make_redis(settings)
         app.state.gateway = gateway or WorkflowGateway(settings.temporal_address, settings.temporal_namespace)
         connector = None if gateway else asyncio.create_task(app.state.gateway.connect_forever())
         yield
