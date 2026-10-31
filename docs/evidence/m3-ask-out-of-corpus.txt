@@ -1,0 +1,24 @@
+[  1] plan             node_enter           planning sub-questions and resolving entities
+[  2] plan             llm_call             plan
+[  3] plan             reasoning            sub-questions: 
+[  4] plan             reasoning            resolved mesh 'metformin' → Metformin
+[  5] plan             node_exit            plan done
+[  6] synthesize       node_enter           drafting claims from the evidence
+[  7] synthesize       llm_call             synthesize
+[  8] synthesize       reasoning            0 claims drafted
+[  9] synthesize       node_exit            draft ready
+[ 10] verify           node_enter           verifying 0 claims against the graph
+[ 11] verify           reasoning            verification complete: 0 checked, 0 passed, 0 dropped
+[ 12] verify           node_exit            answer ready
+{
+  "answer": "The knowledge graph does not contain verified information to answer this question. No evidence provided to support any claim about metformin's mechanism of action.",
+  "claims": [],
+  "claims_checked": 0,
+  "claims_passed": 0,
+  "claims_dropped": 0,
+  "notes": [],
+  "input_tokens": 1717,
+  "output_tokens": 658,
+  "total_tokens": 2375,
+  "estimated_cost_usd": 0.0
+}
