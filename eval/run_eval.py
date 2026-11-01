@@ -40,15 +40,20 @@ async def ask(api: httpx.AsyncClient, question: str, timeout_s: int = 900) -> di
 
 
 async def pubmed_exists(http: httpx.AsyncClient, pmids: set[str], cache: dict) -> dict[str, bool]:
+    """PMID -> exists in PubMed (esummary). PMIDs PubMed could not be asked about are left out (unknown, not false)."""
     missing = [p for p in pmids if p not in cache]
-    if missing:
+    for attempt in range(3):
+        if not missing:
+            break
         r = await http.get("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi",
                            params={"db": "pubmed", "id": ",".join(missing), "retmode": "json"})
-        result = r.json().get("result", {})
-        for p in missing:
-            cache[p] = p in result and "error" not in result[p]
-        await asyncio.sleep(0.4)
-    return {p: cache[p] for p in pmids}
+        result = r.json().get("result") if r.status_code == 200 else None
+        if result is not None:              # a 429 or an error body is not evidence that a PMID is fake
+            for p in missing:
+                cache[p] = p in result and "error" not in result[p]
+            missing = []
+        await asyncio.sleep(0.4 * (attempt + 1))
+    return {p: cache[p] for p in pmids if p in cache}
 
 
 def score_answer(item: dict, outcome: dict, gold_set: set[str]) -> dict:
