@@ -42,6 +42,8 @@ def stream_events(api: httpx.Client, query_id: str) -> list[dict]:
 
 def render_question(item: dict, row: dict, status: dict, gold: list[str] | None) -> list[str]:
     out = [f"### `{item['id']}`", "", f"**Question:** {item['question']}", ""]
+    if row.get("model"):
+        out += [f"**Model:** `{row['model']}`", ""]
     if item["tier"] == "adversarial":
         out += [(f"**Type:** {item['kind']} · **Result:** {'PASS' if row.get('passed') else 'FAIL'} "
                 f"(status `{row['status']}`)"), ""]

@@ -85,17 +85,35 @@ restart needed about 33 s.
 
 ## 5. 20 concurrent queries
 
-**What we did:** `python scripts/concurrent_queries.py http://localhost:8000 20` (four Tier-1 questions in rotation;
-each client subscribes to its own SSE stream).
+**What we did:** `python scripts/concurrent_queries.py http://localhost:8000 20`. At 07:06:57Z this sent 20
+`POST /queries` at once (four Tier-1 questions in rotation), and each client subscribed to its own SSE stream.
 
-**Result:** PENDING. The run needs about 100k LLM tokens, and the Groq free tier's daily cap (200k tokens/day for
-`openai/gpt-oss-120b`) was used up by the evaluation runs on 2026-10-31. It will be filled in once the run is done.
-**Concurrency limits:**
-- per worker: `RESEARCH_MAX_CONCURRENT_RUNS=4` agent runs (`max_concurrent_activities`);
-- across workers: the shared Redis bucket `ratelimit:llm` (`LLM_REQUESTS_PER_MINUTE=8`).
+**What happened** (2026-11-01, model `gpt-oss-20b`):
+- **All 20 were accepted** (202), and all 20 `ResearchWorkflow`s started within 1 s.
+- **Docker Desktop crashed and restarted itself** about 6 minutes in.
+  - Every container restarted, and the test client's SSE connections were cut ("peer closed connection").
+  - The cause wasn't determined: the host still had 14 GB of RAM free.
+  - After the restart Temporal still had all 20 workflows, and they carried on. One stream shows the `checkpoint`
+    resume event.
+- **The provider's daily cap was hit:** by then the free-tier allowance for `gpt-oss-20b` (200k tokens/day) was used
+  up by that morning's evaluation. Every agent run got HTTP 429 "tokens per day" at its first LLM call. After 5
+  attempts each workflow published a terminal `error` and ended *Failed*.
+- **Checked from the 20 Redis streams afterwards:**
+  - steps monotonic and unique in **20/20**;
+  - every stream contains only its own query's events and ends with exactly one terminal event;
+  - the last one ended at 07:23:09Z.
 
-**No cross-talk** by design: each query writes only to `thinking:{query_id}`, and each SSE subscriber reads only
-that key.
+**Result:** PARTIAL.
+- **Proven:** concurrent acceptance, durability through a full Docker restart, no cross-talk, and a clean terminal
+  state for every query.
+- **Not yet proven:** "20/20 answered". That needs about 150k tokens of LLM budget in one day, and the re-run is
+  pending.
+
+**How concurrency is bounded:**
+- per worker: `RESEARCH_MAX_CONCURRENT_RUNS=4` agent runs (`max_concurrent_activities`); the rest wait in the task
+  queue;
+- across workers: every LLM call takes a token from the shared Redis bucket `ratelimit:llm`
+  (`LLM_REQUESTS_PER_MINUTE=8`).
 
 ## 6. Idempotency — ingest the same corpus twice
 
