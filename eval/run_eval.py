@@ -1,6 +1,7 @@
 """Evaluation harness: asks every question through the public API and scores it.
 
 Usage: python eval/run_eval.py --api http://localhost:8000 [--tier 1|2|3|adversarial] [--only id1,id2]
+       python eval/run_eval.py --rescore eval/results/<run>.json   (re-score stored answers; no new LLM calls)
 Needs env GRAPH_READER_PASSWORD (gold answers run as the read-only Neo4j user on bolt://localhost:7687).
 """
 
@@ -90,12 +91,17 @@ async def main() -> None:
     parser.add_argument("--api", default="http://localhost:8000")
     parser.add_argument("--tier")
     parser.add_argument("--only")
+    parser.add_argument("--rescore", help="results file whose queries are re-fetched and re-scored, not re-asked")
     args = parser.parse_args()
     items = yaml.safe_load((HERE / "questions.yaml").read_text(encoding="utf-8"))
     if args.tier:
         items = [i for i in items if str(i["tier"]) == args.tier]
     if args.only:
         items = [i for i in items if i["id"] in args.only.split(",")]
+    previous = {}
+    if args.rescore:
+        previous = {r["id"]: r["query_id"] for r in json.loads(Path(args.rescore).read_text(encoding="utf-8"))}
+        items = [i for i in items if i["id"] in previous]
 
     driver = AsyncGraphDatabase.driver("bolt://localhost:7687", auth=("agent_reader", os.environ["GRAPH_READER_PASSWORD"]))
     results, cache = [], {}
@@ -103,11 +109,15 @@ async def main() -> None:
     out.parent.mkdir(exist_ok=True)
     async with httpx.AsyncClient(base_url=args.api, timeout=60) as api, httpx.AsyncClient(timeout=60) as http:
         for item in items:
-            outcome = await ask(api, item["question"])
+            if item["id"] in previous:
+                status = (await api.get(f"/queries/{previous[item['id']]}")).json()
+                outcome = {"query_id": previous[item["id"]], **status}
+            else:
+                outcome = await ask(api, item["question"])
             row = {"id": item["id"], "tier": item["tier"], "status": outcome["status"], "query_id": outcome["query_id"]}
             if item["tier"] == "adversarial":
                 row["passed"] = score_adversarial(item, outcome)
-                if outcome["status"] == "awaiting_input":
+                if outcome["status"] == "awaiting_input" and not previous:
                     await api.post(f"/queries/{outcome['query_id']}/cancel")
             else:
                 row.update(score_answer(item, outcome, await gold(driver, item["gold_cypher"])))
