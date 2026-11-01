@@ -12,6 +12,28 @@ from agent.prompts import SYNTH_SYSTEM, as_untrusted
 from agent.schemas import ClaimDraft, FinalAnswer, SynthOutput, VerifiedClaim
 from agent.state import AgentState
 
+SYNTH_EVIDENCE_CHARS = 12_000  # ~3.5k tokens: the whole request (+ a revision round) must fit an 8k tokens/minute tier
+
+
+def _evidence_for_prompt(evidence: list[dict], budget: int = SYNTH_EVIDENCE_CHARS) -> list[dict]:
+    """Evidence rows for synthesize, cut to a character budget shared fairly across evidence items.
+
+    verify still checks claims against the full rows in state; rows_shown tells the LLM what it did not see.
+    """
+    share = budget // max(1, len(evidence))
+    shown = []
+    for e in evidence:
+        rows, used = [], 0
+        for row in e["rows"]:
+            size = len(json.dumps(row, default=str))
+            if rows and used + size > share:
+                break
+            rows.append(row)
+            used += size
+        shown.append({"evidence_index": e["index"], "sub_question": e["sub_question"], "rows": rows,
+                      "rows_shown": len(rows), "row_count": e["row_count"]})
+    return shown
+
 
 def make_synthesize(deps: AgentDeps):
     """Build the `synthesize` node."""
@@ -19,8 +41,7 @@ def make_synthesize(deps: AgentDeps):
     async def synthesize(state: AgentState) -> dict:
         ev = deps.emitter("synthesize", state)
         await ev.emit(EventType.NODE_ENTER, "drafting claims from the evidence")
-        evidence = [{"evidence_index": e["index"], "sub_question": e["sub_question"], "rows": e["rows"]}
-                    for e in state.get("evidence", [])]
+        evidence = _evidence_for_prompt(state.get("evidence", []))
         user = (f"Question: {state['question']}\n"
                 f"Resolved entities: {json.dumps(state.get('entities', {}))}\n"
                 f"Not in corpus: {state.get('unresolved', [])}\n"

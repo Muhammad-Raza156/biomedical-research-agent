@@ -167,3 +167,17 @@ async def test_literal_backslash_n_in_generated_cypher_becomes_a_line_break():
     deps, _ = make_deps(llm, graph)
     await run(build_graph(deps, InMemorySaver()), initial_state("q1", "Who wrote PMID 33516777?"))
     assert r"\n" not in graph.reads[0] and ")\nRETURN" in graph.reads[0]   # a real line break reached Neo4j
+
+
+async def test_synthesize_prompt_stays_within_budget_when_evidence_is_large():
+    # A 413 "request too large" on an 8k-tokens/minute tier came from synthesize sending every evidence row.
+    big = [{"pmid": str(30000000 + i), "name": "Author " + "x" * 120, "title": "t" * 200} for i in range(50)]
+    llm = FakeLLM({PlanOutput: [PlanOutput(sub_questions=["a", "b", "c"], entities=[])],
+                   CypherOutput: [CYPHER] * 3,
+                   ObserveOutput: [ObserveOutput(summary="ok", decision="next")] * 3,
+                   SynthOutput: [SynthOutput(no_answer_reason="none")]})
+    deps, _ = make_deps(llm, FakeGraph(papers=PAPERS, rows=[big, big, big]))
+    await run(build_graph(deps, InMemorySaver()), initial_state("q1", "q"))
+    synth_prompt = llm.prompts[llm.calls.index("SynthOutput")]
+    assert len(synth_prompt) < 20_000                            # ~5k tokens, leaves room for a revision round
+    assert '"rows_shown"' in synth_prompt and '"row_count": 50' in synth_prompt
