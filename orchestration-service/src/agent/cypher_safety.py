@@ -56,7 +56,10 @@ def check_static(cypher: str, max_limit: int) -> SafetyResult:
 
 
 def check_plan(info: ExplainInfo, max_cartesian_rows: float = 100_000) -> str | None:
-    """Inspect EXPLAIN operators: no write operators, no huge cartesian products."""
+    """Inspect EXPLAIN: no unknown names, no write operators, no huge cartesian products."""
+    if info.unknown_names:
+        return ("the query uses names that are not in the graph — use only the labels, relationship types and "
+                "properties from the schema: " + " ".join(info.unknown_names))
     for op in info.operators:
         if op.startswith(_WRITE_OPERATORS):
             return f"plan contains write operator '{op}'"

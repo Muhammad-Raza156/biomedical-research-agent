@@ -54,3 +54,11 @@ def test_plan_with_write_operator_or_huge_cartesian_is_rejected():
 def test_comment_marker_inside_a_string_cannot_hide_a_write():
     result = check_static("MATCH (p:Paper) WHERE p.url = 'http://x' DETACH DELETE p", 200)
     assert not result.ok and "DETACH" in result.reason
+
+
+def test_plan_naming_a_label_relationship_or_property_that_does_not_exist_is_rejected():
+    # Neo4j only *warns* about unknown names; `[:BRODER*0..]` then silently matches zero-length paths only.
+    info = ExplainInfo(operators=["ProduceResults"], max_estimated_rows=1,
+                       unknown_names=["The relationship type `BRODER` does not exist."])
+    reason = check_plan(info)
+    assert reason and "BRODER" in reason and "schema" in reason

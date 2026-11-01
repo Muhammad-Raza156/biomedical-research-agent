@@ -50,6 +50,9 @@ def _collect_operators(plan: dict | None, ops: list[str], rows: list[float]) -> 
         _collect_operators(child, ops, rows)
 
 
+UNKNOWN_NAME_STATUSES = ("01N50", "01N51", "01N52")  # GQL status: label / relationship type / property key missing
+
+
 class Neo4jGraphReader:
     """All agent reads run in READ transactions as the read-only user."""
 
@@ -81,7 +84,10 @@ class Neo4jGraphReader:
             raise QueryFailed(str(exc)) from exc
         ops, rows = [], []
         _collect_operators(summary.plan, ops, rows)
-        return ExplainInfo(operators=ops, max_estimated_rows=max(rows, default=0))
+        # Unknown names are only warnings to Neo4j; a typo like [:BRODER*0..] silently matches zero-length paths.
+        unknown = [g.status_description.removeprefix("warn: ") for g in summary.gql_status_objects
+                   if g.gql_status in UNKNOWN_NAME_STATUSES]
+        return ExplainInfo(operators=ops, max_estimated_rows=max(rows, default=0), unknown_names=unknown)
 
     async def read(self, cypher: str, timeout: float) -> list[dict]:
         return await self._rows(cypher, timeout)

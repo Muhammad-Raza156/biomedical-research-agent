@@ -11,6 +11,7 @@ from graph.loader import (
     load_mesh_hierarchy,
     load_paper_batch,
 )
+from graph.repository import Neo4jGraphReader
 from graph.rows import build_batch_rows
 from graph.schema import ensure_schema
 from graph.stats import compute_corpus_stats
@@ -198,3 +199,12 @@ async def test_reader_user_cannot_write(local_env):
         with pytest.raises((Forbidden, ClientError)):
             await (await s.run("CREATE (:Probe)")).consume()
     await reader.close()
+
+
+async def test_explain_reports_names_missing_from_the_graph(driver):
+    await load_all(driver)
+    reader = Neo4jGraphReader(driver, DB)
+    typo = await reader.explain("MATCH (p:Paper)-[:MENTIONS]->(:MeshTerm)-[:BRODER*0..]->(m:MeshTerm) RETURN p.pmid")
+    assert any("BRODER" in name for name in typo.unknown_names)
+    ok = await reader.explain("MATCH (p:Paper)-[:MENTIONS]->(:MeshTerm)-[:BROADER*0..]->(m:MeshTerm) RETURN p.pmid")
+    assert ok.unknown_names == []

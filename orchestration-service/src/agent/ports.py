@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Protocol, TypeVar
 
 from pydantic import BaseModel
@@ -28,6 +28,7 @@ class ExplainInfo:
 
     operators: list[str]
     max_estimated_rows: float
+    unknown_names: list[str] = field(default_factory=list)  # labels/relationship types/properties not in the graph
 
 
 class GraphUnavailable(Exception):
