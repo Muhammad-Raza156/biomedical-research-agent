@@ -103,11 +103,31 @@ restart needed about 33 s.
   - every stream contains only its own query's events and ends with exactly one terminal event;
   - the last one ended at 07:23:09Z.
 
-**Result:** PARTIAL.
-- **Proven:** concurrent acceptance, durability through a full Docker restart, no cross-talk, and a clean terminal
-  state for every query.
-- **Not yet proven:** "20/20 answered". That needs about 150k tokens of LLM budget in one day, and the re-run is
-  pending.
+**Result (2026-11-01):** PARTIAL. Acceptance, durability and clean streams were proven, but no answers came back,
+because the provider's daily cap had been reached.
+
+**Re-run, 2026-11-03** (clean-checkout stack, `gpt-oss-120b`, **two worker replicas**):
+```
+python scripts/concurrent_queries.py http://localhost:8000 20
+...
+completed: 20/20; steps ok: 20/20; max simultaneous agent runs: 8
+```
+- All 20 queries were posted at 05:54:08Z; the last answer arrived at 06:09:21Z, i.e. **about 15 minutes** for 20
+  agent runs and 153k tokens. The shared `ratelimit:llm` bucket and the provider's 8k tokens/minute set the pace.
+- **20/20 streams ended with `answer`.** Steps were monotonic and unique in 20/20, and no run needed a retry.
+- **Max simultaneous agent runs: 8** = `RESEARCH_MAX_CONCURRENT_RUNS` (4) × 2 replicas. Concurrency was bounded
+  exactly as configured; the rest waited in Temporal's task queue.
+- **No cross-talk:** every stream holds only its own question's events and answer.
+- **Answer quality, checked by hand: 18/20 correct.**
+  - All 15 journal and retraction answers were right, e.g. "PMID 35269852 was published in International journal
+    of molecular sciences and is marked as retracted".
+  - 3 of the 5 "authors of PMID 33516777" runs named both authors. The other **2 answered "does not contain"**: the
+    model wrote `(Paper)-[:AUTHORED]->(Author)`, i.e. the wrong direction, and once used an integer PMID. Neo4j
+    returns 0 rows for both without a warning, and one run repeated the identical query 4 times.
+  - These are wrong negatives, not fabrications. Agent fix noted in EVAL.md.
+
+**Result (2026-11-03):** PASS for concurrency (20/20 completed, bounded at 8, no cross-talk). Answer quality under
+load was 18/20.
 
 **How concurrency is bounded:**
 - per worker: `RESEARCH_MAX_CONCURRENT_RUNS=4` agent runs (`max_concurrent_activities`); the rest wait in the task
@@ -147,6 +167,41 @@ papers still 275
 
 **Result:** PASS. Writes are refused by the database itself. That is the fourth layer, after the static check,
 the EXPLAIN operator check and the read-only transaction (`orchestration-service/src/agent/cypher_safety.py`).
+
+## 8. Clean-checkout rebuild — the graders' path (2026-11-03)
+
+**What we did:**
+```bash
+docker compose -f api-service/docker-compose.yml down -v              # wipe every volume
+docker compose -f orchestration-service/docker-compose.yml down -v
+git clone https://github.com/Muhammad-Raza156/biomedical-research-agent.git bra-clean && cd bra-clean
+cp .env.example .env                       # + GROQ_API_KEY, NCBI_API_KEY, NCBI_EMAIL; example passwords kept
+docker network create research-net         # "already exists" is fine
+docker compose -f orchestration-service/docker-compose.yml up -d --build
+docker compose -f api-service/docker-compose.yml up -d --build
+```
+
+**What happened:**
+- Both stacks were up in 2 min 10 s (05:40:02 → 05:42:12Z). `/health` was 200 with all dependencies up.
+- **No other step was needed.**
+- The worker started `ingest-v1` by itself (05:42:17Z), and it **completed at 05:44:20Z**: about 2 minutes from
+  nothing, with an NCBI API key.
+- Every §3 criterion was met: 275 papers (the identical PMID list), 680 CITES, longest chain 13, 135 multi-paper
+  authors, 14 MeSH trees, 27 papers with notices. INGESTION_REPORT.md has the numbers and the small drift since
+  October.
+- **Ingestion kill, on the fresh stack:**
+  - `chaos_kill.py ingest:ingest-v2check batch_fetched orchestration-worker-1` killed the worker after the first
+    fetch batch (05:44:43Z);
+  - `docker start` at 05:45:19Z;
+  - Temporal retried 5 activities on attempt 2, and the run completed at 05:46:19Z with **counts identical to
+    `ingest-v1`**.
+- **Two replicas:** `up -d --scale worker=2` gave `worker-1` and `worker-2`, each polling both task queues.
+- **Read-only user:** `CREATE`, `SET` and `DETACH DELETE` as `agent_reader` were all refused (`Forbidden`).
+- **Tests on the rebuilt stack:**
+  - unit: 144 worker + 19 API;
+  - integration: 14 + 2, including end-to-end idempotency.
+
+**Result:** PASS. A fresh clone with only the README steps reproduces the system and its corpus.
 
 ## Also observed
 

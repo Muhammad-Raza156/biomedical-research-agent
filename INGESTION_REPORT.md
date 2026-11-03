@@ -1,7 +1,16 @@
 # Ingestion report — corpus `v1`
 
-Generated from the live run `ingest-v1` (completed 2026-10-30) with
+Generated from the live run `ingest-v1` of the **clean-checkout rebuild on 2026-11-03** (fresh volumes, README
+commands only) with
 `python orchestration-service/scripts/ingestion_report.py INGESTION_PMIDS.json`, plus the hand-written sections below.
+
+**Drift between runs:** PubMed records change.
+- The rebuild's fresh esearch returned the **identical 275 PMIDs**.
+- The first ingestion (2026-10-30) gave 678 CITES (`both` 674, `xml` 4).
+- The rebuild gave **680** (`both` 674, `xml` 6), because PubMed's XML reference lists now contain two more in-corpus
+  references (elink unchanged).
+- Every other count is identical: 275 papers, 1,649 authors, 1,099 MeSH terms, 146 journals, 36 notices.
+- Within one run, re-ingestion is exactly idempotent (RESILIENCE §6).
 
 ## Corpus definition (from `.env`)
 
@@ -24,7 +33,7 @@ publication date. We store the journal issue's `<PubDate>` as `pub_year` + `pub_
 | Papers | 150–400 | 275 |
 | Date span | 10 years | 2006–2026 (20 years) |
 | Before / after 2016 | 40 / 40 | 77 / 198 |
-| Intra-corpus CITES | 120 | 678 |
+| Intra-corpus CITES | 120 | 680 |
 | Longest chain | 4 | 13 |
 | Authors with 2+ papers | 25 | 135 |
 | MeSH top-level trees | 3 | 14 (A, B, C, D, E, F, G, H, I, J, L, M, N, Z) |
@@ -32,9 +41,9 @@ publication date. We store the journal issue's `<PubDate>` as `pub_year` + `pub_
 
 ## Citations by source
 
-- XML ReferenceList internal edges: 678; elink internal edges: 674
-- both: 674, xml only: 4, elink only: 0
-- dangling (outside corpus, skipped): xml 5154, elink 5080
+- XML ReferenceList internal edges: 680; elink internal edges: 674
+- both: 674, xml only: 6, elink only: 0
+- dangling (outside corpus, skipped): xml 5171, elink 5080
 
 ## Node / relationship counts
 
@@ -53,7 +62,7 @@ publication date. We store the journal issue's `<PubDate>` as `pub_year` + `pub_
     "PUBLISHED_IN": 275,
     "MENTIONS": 3664,
     "COMMENTED_IN": 30,
-    "CITES": 678,
+    "CITES": 680,
     "COMMENTS_ON": 2,
     "CORRECTED_BY": 3,
     "RETRACTED_BY": 1
@@ -110,5 +119,5 @@ person statistics.
   - 36 `(:Notice)` nodes on 27 papers;
   - 1 retraction (PMID 35269852, *Int J Mol Sci*).
 - **Citations:** both XML `ReferenceList` and NCBI elink were used.
-  - Edges kept only when both ends are in the corpus (678).
+  - Edges kept only when both ends are in the corpus (680 in the 2026-11-03 run).
   - About 5,100 references point outside the corpus and are counted but skipped.

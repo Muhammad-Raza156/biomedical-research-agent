@@ -41,6 +41,24 @@ PMIDs it found in the graph, and streams its reasoning live over SSE.
 - the 20-query re-run;
 - a clean-checkout rebuild.
 
+(All four were done on 2026-11-03; see the update below.)
+
+### Update — 2026-11-03
+
+Done after submission, without changing anything above:
+- **Clean-checkout rebuild** (RESILIENCE §8):
+  - every volume wiped, a fresh clone, only the README commands;
+  - the stack was up in about 2 minutes, and ingestion completed by itself in about 2 more;
+  - same 275 PMIDs and every §3 criterion met (680 citations; PubMed added 2 references since October);
+  - an ingestion kill test, two replicas, the read-only user and all tests pass on it.
+- **20 concurrent queries** (RESILIENCE §5): **20/20 completed** in about 15 minutes with two workers, at most 8 runs
+  at once (4 per worker, as configured), with no cross-talk and steps unique in every stream. Answers: 18/20
+  correct; 2 were wrong "none found" answers caused by Cypher written in the wrong relationship direction (EVAL.md).
+- **Evaluation** (EVAL.md): the failed Tier 3 question now passes (P/R 1.00). Tier 3 is now precision 1.00, recall
+  0.86.
+- **Prompt injection, re-run with the planted text in view of the model:** both drills passed. The model treated
+  the instructions as data, cited no planted PMID, and summarised the real studies (QUESTIONS.md).
+
 ## Run it
 
 ```bash
